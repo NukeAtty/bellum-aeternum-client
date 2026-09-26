@@ -56,7 +56,7 @@ namespace DTAClient.DXGUI.Multiplayer
             btnNewGame.HoverTexture = AssetLoader.LoadTexture("133pxbtn_c.png");
             btnNewGame.FontIndex = 1;
             btnNewGame.Text = "New Game".L10N("Client:Main:NewGame");
-            btnNewGame.HoverSoundEffect = new EnhancedSoundEffect("button.wav");
+            btnNewGame.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/button.wav");
             btnNewGame.LeftClick += BtnNewGame_LeftClick;
 
             btnLoadGame = new XNAButton(WindowManager);

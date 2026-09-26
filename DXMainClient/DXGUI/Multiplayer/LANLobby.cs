@@ -254,7 +254,7 @@ namespace DTAClient.DXGUI.Multiplayer
 
             unknownGameIcon = AssetLoader.TextureFromImage(Image.Load(unknownIconStream));
 
-            sndGameCreated = new EnhancedSoundEffect("gamecreated.wav");
+            sndGameCreated = new EnhancedSoundEffect("Audio/SE/gamecreated.wav");
 
             base.Initialize();
 

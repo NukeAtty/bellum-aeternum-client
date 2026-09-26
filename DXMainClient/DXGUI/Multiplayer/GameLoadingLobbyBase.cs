@@ -193,10 +193,10 @@ namespace DTAClient.DXGUI.Multiplayer
 
             base.Initialize();
 
-            sndJoinSound = new EnhancedSoundEffect("joingame.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyJoinCooldown);
-            sndLeaveSound = new EnhancedSoundEffect("leavegame.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyLeaveCooldown);
-            sndMessageSound = new EnhancedSoundEffect("message.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundMessageCooldown);
-            sndGetReadySound = new EnhancedSoundEffect("getready.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyGetReadyCooldown);
+            sndJoinSound = new EnhancedSoundEffect("Audio/SE/joingame.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyJoinCooldown);
+            sndLeaveSound = new EnhancedSoundEffect("Audio/SE/leavegame.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyLeaveCooldown);
+            sndMessageSound = new EnhancedSoundEffect("Audio/SE/message.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundMessageCooldown);
+            sndGetReadySound = new EnhancedSoundEffect("Audio/SE/getready.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyGetReadyCooldown);
 
             MPColors = MultiplayerColor.LoadColors();
 

@@ -528,8 +528,15 @@ namespace DTAClient.DXGUI
                 if (XNAScreenResolutionManager.DesktopResolution == clientResolution)
                 {
                     Logger.Log($"Entering fullscreen mode with resolution {XNAScreenResolutionManager.DesktopResolution}.");
-                    graphics.IsFullScreen = true;
-                    graphics.ApplyChanges();
+                    // Defer the fullscreen transition to the first game loop frame. Doing it here,
+                    // during Initialize before the WinForms message pump is running, races the
+                    // GraphicsDevice reset against WM_ACTIVATE messages, which crashes inside
+                    // MonoGame's WinFormsGameWindow.OnDeactivate.
+                    wm.AddCallback(new Action(() =>
+                    {
+                        graphics.IsFullScreen = true;
+                        graphics.ApplyChanges();
+                    }));
                 }
                 else
                 {

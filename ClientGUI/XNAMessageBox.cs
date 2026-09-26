@@ -103,7 +103,7 @@ namespace ClientGUI
             btnOK.ClientRectangle = new Rectangle(0, 0, 75, 23);
             btnOK.IdleTexture = AssetLoader.LoadTexture("75pxbtn.png");
             btnOK.HoverTexture = AssetLoader.LoadTexture("75pxbtn_c.png");
-            btnOK.HoverSoundEffect = new EnhancedSoundEffect("button.wav");
+            btnOK.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/button.wav");
             btnOK.Name = "btnOK";
             btnOK.Text = "OK".L10N("Client:ClientGUI:ButtonOK");
             btnOK.LeftClick += BtnOK_LeftClick;
@@ -123,7 +123,7 @@ namespace ClientGUI
             btnYes.ClientRectangle = new Rectangle(0, 0, 75, 23);
             btnYes.IdleTexture = AssetLoader.LoadTexture("75pxbtn.png");
             btnYes.HoverTexture = AssetLoader.LoadTexture("75pxbtn_c.png");
-            btnYes.HoverSoundEffect = new EnhancedSoundEffect("button.wav");
+            btnYes.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/button.wav");
             btnYes.Name = "btnYes";
             btnYes.Text = "Yes".L10N("Client:ClientGUI:ButtonYes");
             btnYes.LeftClick += BtnYes_LeftClick;
@@ -139,7 +139,7 @@ namespace ClientGUI
             btnNo.ClientRectangle = new Rectangle(0, 0, 75, 23);
             btnNo.IdleTexture = AssetLoader.LoadTexture("75pxbtn.png");
             btnNo.HoverTexture = AssetLoader.LoadTexture("75pxbtn_c.png");
-            btnNo.HoverSoundEffect = new EnhancedSoundEffect("button.wav");
+            btnNo.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/button.wav");
             btnNo.Name = "btnNo";
             btnNo.Text = "No".L10N("Client:ClientGUI:ButtonNo");
             btnNo.LeftClick += BtnNo_LeftClick;
@@ -158,7 +158,7 @@ namespace ClientGUI
             btnOK.ClientRectangle = new Rectangle(0, 0, 75, 23);
             btnOK.IdleTexture = AssetLoader.LoadTexture("75pxbtn.png");
             btnOK.HoverTexture = AssetLoader.LoadTexture("75pxbtn_c.png");
-            btnOK.HoverSoundEffect = new EnhancedSoundEffect("button.wav");
+            btnOK.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/button.wav");
             btnOK.Name = "btnOK";
             btnOK.Text = "OK".L10N("Client:ClientGUI:ButtonOK");
             btnOK.LeftClick += BtnYes_LeftClick;
@@ -174,7 +174,7 @@ namespace ClientGUI
             btnCancel.ClientRectangle = new Rectangle(0, 0, 75, 23);
             btnCancel.IdleTexture = AssetLoader.LoadTexture("75pxbtn.png");
             btnCancel.HoverTexture = AssetLoader.LoadTexture("75pxbtn_c.png");
-            btnCancel.HoverSoundEffect = new EnhancedSoundEffect("button.wav");
+            btnCancel.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/button.wav");
             btnCancel.Name = "btnCancel";
             btnCancel.Text = "Cancel".L10N("Client:ClientGUI:ButtonCancel");
             btnCancel.LeftClick += BtnCancel_LeftClick;

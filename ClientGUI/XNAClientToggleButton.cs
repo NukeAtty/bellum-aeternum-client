@@ -31,7 +31,7 @@ namespace ClientGUI
             UpdateIdleTexture();
 
             if (HoverSoundEffect == null)
-                HoverSoundEffect = new EnhancedSoundEffect("button.wav");
+                HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/button.wav");
 
             base.Initialize();
 

@@ -101,7 +101,7 @@ namespace DTAClient.DXGUI.Generic
             tabControl = new XNAClientTabControl(WindowManager);
             tabControl.Name = nameof(tabControl);
             tabControl.ClientRectangle = new Rectangle(12, 10, 0, 0);
-            tabControl.ClickSound = new EnhancedSoundEffect("button.wav");
+            tabControl.ClickSound = new EnhancedSoundEffect("Audio/SE/button.wav");
             tabControl.FontIndex = 1;
             tabControl.AddTab("Game Statistics".L10N("Client:Main:GameStatistic"), UIDesignConstants.BUTTON_WIDTH_133);
             tabControl.AddTab("Total Statistics".L10N("Client:Main:TotalStatistic"), UIDesignConstants.BUTTON_WIDTH_133);
@@ -412,7 +412,7 @@ namespace DTAClient.DXGUI.Generic
             for (int i = 0; i < sides.Length; i++)
                 sideTextures[i] = AssetLoader.LoadTexture(sides[i].Name + "icon.png");
 
-            sideTextures[sides.Length] = AssetLoader.LoadTexture("spectatoricon.png");
+            sideTextures[sides.Length] = AssetLoader.LoadTexture("Icons/spectatoricon.png");
 
             mpColors = MultiplayerColor.LoadColors();
 

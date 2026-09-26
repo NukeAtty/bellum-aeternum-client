@@ -243,9 +243,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             // the controls will be initialized twice via INItializableWindow system
             AddChildWithoutInitialize(CoopBriefingBox);
 
-            sndClickSound = new EnhancedSoundEffect("button.wav");
+            sndClickSound = new EnhancedSoundEffect("Audio/SE/button.wav");
 
-            sndDropdownSound = new EnhancedSoundEffect("dropdown.wav");
+            sndDropdownSound = new EnhancedSoundEffect("Audio/SE/dropdown.wav");
 
             base.Initialize();
 

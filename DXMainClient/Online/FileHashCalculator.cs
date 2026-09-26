@@ -30,15 +30,15 @@ namespace DTAClient.Online
                 "ai.ini",
                 "art.ini",
                 "shroud.shp",
-                "INI/Rules.ini",
-                "INI/Enhance.ini",
-                "INI/Firestrm.ini",
-                "INI/Art.ini",
-                "INI/ArtE.ini",
-                "INI/ArtFS.ini",
-                "INI/AI.ini",
-                "INI/AIE.ini",
-                "INI/AIFS.ini"
+                "Configs/Rules.ini",
+                "Configs/Enhance.ini",
+                "Configs/Firestrm.ini",
+                "Configs/Art.ini",
+                "Configs/ArtE.ini",
+                "Configs/ArtFS.ini",
+                "Configs/AI.ini",
+                "Configs/AIE.ini",
+                "Configs/AIFS.ini"
             },
             ClientType.YR => new string[]
             {
@@ -48,22 +48,22 @@ namespace DTAClient.Online
                 "soundmd.ini",
                 "aimd.ini",
                 "shroud.shp",
-                "INI/Map Code/Cooperative.ini",
-                "INI/Map Code/Free For All.ini",
-                "INI/Map Code/Land Rush.ini",
-                "INI/Map Code/Meat Grinder.ini",
-                "INI/Map Code/Megawealth.ini",
-                "INI/Map Code/Naval War.ini",
-                "INI/Map Code/Standard.ini",
-                "INI/Map Code/Team Alliance.ini",
-                "INI/Map Code/Unholy Alliance.ini",
-                "INI/Game Options/Allies Allowed.ini",
-                "INI/Game Options/Brutal AI.ini",
-                "INI/Game Options/No Dog Engi Eat.ini",
-                "INI/Game Options/No Spawn Previews.ini",
-                "INI/Game Options/RA2 Classic Mode.ini",
-                "INI/Map Code/GlobalCode.ini",
-                "INI/Map Code/MultiplayerGlobalCode.ini"
+                "Configs/Map Code/Cooperative.ini",
+                "Configs/Map Code/Free For All.ini",
+                "Configs/Map Code/Land Rush.ini",
+                "Configs/Map Code/Meat Grinder.ini",
+                "Configs/Map Code/Megawealth.ini",
+                "Configs/Map Code/Naval War.ini",
+                "Configs/Map Code/Standard.ini",
+                "Configs/Map Code/Team Alliance.ini",
+                "Configs/Map Code/Unholy Alliance.ini",
+                "Configs/Game Options/Allies Allowed.ini",
+                "Configs/Game Options/Brutal AI.ini",
+                "Configs/Game Options/No Dog Engi Eat.ini",
+                "Configs/Game Options/No Spawn Previews.ini",
+                "Configs/Game Options/RA2 Classic Mode.ini",
+                "Configs/Map Code/GlobalCode.ini",
+                "Configs/Map Code/MultiplayerGlobalCode.ini"
             },
             ClientType.Ares => new string[]
             {
@@ -102,7 +102,7 @@ namespace DTAClient.Online
                     ? CalculateSHA1ForFile(SafePath.CombineFilePath(ProgramConstants.GamePath, ClientConfiguration.Instance.GetGameExecutableName()))
                     : string.Empty,
                 LauncherExeHash = CalculateSHA1ForFile(SafePath.CombineFilePath(ProgramConstants.GamePath, ClientConfiguration.Instance.GameLauncherExecutableName)),
-                MPMapsHash = CalculateSHA1ForFile(SafePath.CombineFilePath(ProgramConstants.GamePath, ClientConfiguration.Instance.MPMapsIniPath)),
+                MPMapsHash = CalculateSHA1ForFile(SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), ClientConfiguration.Instance.MPMapsIniPath)),
                 FHCConfigHash = CalculateSHA1ForFile(SafePath.CombineFilePath(ProgramConstants.BASE_RESOURCE_PATH, CONFIGNAME)),
             };
 
@@ -126,16 +126,19 @@ namespace DTAClient.Online
 
             foreach (string relativePath in fileNamesToCheck)
             {
-                string fullPath = SafePath.CombineFilePath(ProgramConstants.GamePath, relativePath);
+                string basePath = relativePath.StartsWith("Configs/", StringComparison.OrdinalIgnoreCase)
+                    ? ProgramConstants.GetBaseResourcePath()
+                    : ProgramConstants.GamePath;
+                string fullPath = SafePath.CombineFilePath(basePath, relativePath);
                 string hash = fh.AddHashForFileIfExists(relativePath, fullPath);
                 if (!string.IsNullOrEmpty(hash))
                     Logger.Log($"Hash for {relativePath}: {hash}");
             }
 
-            List<DirectoryInfo> iniPaths = [SafePath.GetDirectory(ProgramConstants.GamePath, "INI", "Game Options")];
+            List<DirectoryInfo> iniPaths = [SafePath.GetDirectory(ProgramConstants.GetBaseResourcePath(), "Configs", "Game Options")];
 
             if (ClientConfiguration.Instance.ClientGameType != ClientType.YR)
-                iniPaths.Add(SafePath.GetDirectory(ProgramConstants.GamePath, "INI", "Map Code"));
+                iniPaths.Add(SafePath.GetDirectory(ProgramConstants.GetBaseResourcePath(), "Configs", "Map Code"));
 
             foreach (DirectoryInfo path in iniPaths)
             {

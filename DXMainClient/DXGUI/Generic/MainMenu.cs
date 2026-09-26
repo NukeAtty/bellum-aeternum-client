@@ -181,77 +181,77 @@ namespace DTAClient.DXGUI.Generic
             btnNewCampaign.Name = nameof(btnNewCampaign);
             btnNewCampaign.IdleTexture = AssetLoader.LoadTexture("MainMenu/campaign.png");
             btnNewCampaign.HoverTexture = AssetLoader.LoadTexture("MainMenu/campaign_c.png");
-            btnNewCampaign.HoverSoundEffect = new EnhancedSoundEffect("MainMenu/button.wav");
+            btnNewCampaign.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
             btnNewCampaign.LeftClick += BtnNewCampaign_LeftClick;
 
             btnLoadGame = new XNAClientButton(WindowManager);
             btnLoadGame.Name = nameof(btnLoadGame);
             btnLoadGame.IdleTexture = AssetLoader.LoadTexture("MainMenu/loadmission.png");
             btnLoadGame.HoverTexture = AssetLoader.LoadTexture("MainMenu/loadmission_c.png");
-            btnLoadGame.HoverSoundEffect = new EnhancedSoundEffect("MainMenu/button.wav");
+            btnLoadGame.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
             btnLoadGame.LeftClick += BtnLoadGame_LeftClick;
 
             btnSkirmish = new XNAClientButton(WindowManager);
             btnSkirmish.Name = nameof(btnSkirmish);
             btnSkirmish.IdleTexture = AssetLoader.LoadTexture("MainMenu/skirmish.png");
             btnSkirmish.HoverTexture = AssetLoader.LoadTexture("MainMenu/skirmish_c.png");
-            btnSkirmish.HoverSoundEffect = new EnhancedSoundEffect("MainMenu/button.wav");
+            btnSkirmish.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
             btnSkirmish.LeftClick += BtnSkirmish_LeftClick;
 
             btnCnCNet = new XNAClientButton(WindowManager);
             btnCnCNet.Name = nameof(btnCnCNet);
             btnCnCNet.IdleTexture = AssetLoader.LoadTexture("MainMenu/cncnet.png");
             btnCnCNet.HoverTexture = AssetLoader.LoadTexture("MainMenu/cncnet_c.png");
-            btnCnCNet.HoverSoundEffect = new EnhancedSoundEffect("MainMenu/button.wav");
+            btnCnCNet.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
             btnCnCNet.LeftClick += BtnCnCNet_LeftClick;
 
             btnLan = new XNAClientButton(WindowManager);
             btnLan.Name = nameof(btnLan);
             btnLan.IdleTexture = AssetLoader.LoadTexture("MainMenu/lan.png");
             btnLan.HoverTexture = AssetLoader.LoadTexture("MainMenu/lan_c.png");
-            btnLan.HoverSoundEffect = new EnhancedSoundEffect("MainMenu/button.wav");
+            btnLan.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
             btnLan.LeftClick += BtnLan_LeftClick;
 
             btnOptions = new XNAClientButton(WindowManager);
             btnOptions.Name = nameof(btnOptions);
             btnOptions.IdleTexture = AssetLoader.LoadTexture("MainMenu/options.png");
             btnOptions.HoverTexture = AssetLoader.LoadTexture("MainMenu/options_c.png");
-            btnOptions.HoverSoundEffect = new EnhancedSoundEffect("MainMenu/button.wav");
+            btnOptions.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
             btnOptions.LeftClick += BtnOptions_LeftClick;
 
             btnMapEditor = new XNAClientButton(WindowManager);
             btnMapEditor.Name = nameof(btnMapEditor);
             btnMapEditor.IdleTexture = AssetLoader.LoadTexture("MainMenu/mapeditor.png");
             btnMapEditor.HoverTexture = AssetLoader.LoadTexture("MainMenu/mapeditor_c.png");
-            btnMapEditor.HoverSoundEffect = new EnhancedSoundEffect("MainMenu/button.wav");
+            btnMapEditor.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
             btnMapEditor.LeftClick += BtnMapEditor_LeftClick;
 
             btnStatistics = new XNAClientButton(WindowManager);
             btnStatistics.Name = nameof(btnStatistics);
             btnStatistics.IdleTexture = AssetLoader.LoadTexture("MainMenu/statistics.png");
             btnStatistics.HoverTexture = AssetLoader.LoadTexture("MainMenu/statistics_c.png");
-            btnStatistics.HoverSoundEffect = new EnhancedSoundEffect("MainMenu/button.wav");
+            btnStatistics.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
             btnStatistics.LeftClick += BtnStatistics_LeftClick;
 
             btnCredits = new XNAClientButton(WindowManager);
             btnCredits.Name = nameof(btnCredits);
             btnCredits.IdleTexture = AssetLoader.LoadTexture("MainMenu/credits.png");
             btnCredits.HoverTexture = AssetLoader.LoadTexture("MainMenu/credits_c.png");
-            btnCredits.HoverSoundEffect = new EnhancedSoundEffect("MainMenu/button.wav");
+            btnCredits.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
             btnCredits.LeftClick += BtnCredits_LeftClick;
 
             btnExtras = new XNAClientButton(WindowManager);
             btnExtras.Name = nameof(btnExtras);
             btnExtras.IdleTexture = AssetLoader.LoadTexture("MainMenu/extras.png");
             btnExtras.HoverTexture = AssetLoader.LoadTexture("MainMenu/extras_c.png");
-            btnExtras.HoverSoundEffect = new EnhancedSoundEffect("MainMenu/button.wav");
+            btnExtras.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
             btnExtras.LeftClick += BtnExtras_LeftClick;
 
             var btnExit = new XNAClientButton(WindowManager);
             btnExit.Name = nameof(btnExit);
             btnExit.IdleTexture = AssetLoader.LoadTexture("MainMenu/exitgame.png");
             btnExit.HoverTexture = AssetLoader.LoadTexture("MainMenu/exitgame_c.png");
-            btnExit.HoverSoundEffect = new EnhancedSoundEffect("MainMenu/button.wav");
+            btnExit.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
             btnExit.LeftClick += BtnExit_LeftClick;
 
             XNALabel lblCnCNetStatus = new XNALabel(WindowManager);

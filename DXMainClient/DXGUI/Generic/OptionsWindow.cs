@@ -49,7 +49,7 @@ namespace DTAClient.DXGUI.Generic
             tabControl.Name = "tabControl";
             tabControl.ClientRectangle = new Rectangle(12, 12, 0, 23);
             tabControl.FontIndex = 1;
-            tabControl.ClickSound = new EnhancedSoundEffect("button.wav");
+            tabControl.ClickSound = new EnhancedSoundEffect("Audio/SE/button.wav");
             tabControl.AddTab("Display".L10N("Client:DTAConfig:TabDisplay"), UIDesignConstants.BUTTON_WIDTH_92);
             tabControl.AddTab("Audio".L10N("Client:DTAConfig:TabAudio"), UIDesignConstants.BUTTON_WIDTH_92);
             tabControl.AddTab("Game".L10N("Client:DTAConfig:TabGame"), UIDesignConstants.BUTTON_WIDTH_92);

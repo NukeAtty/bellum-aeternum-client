@@ -21,7 +21,7 @@ namespace DTAClient.Domain.Multiplayer
             Initialize();
         }
 
-        private const string BASE_INI_PATH = "INI/Map Code/";
+        private const string BASE_INI_PATH = "Configs/Map Code/";
         private const string SPAWN_INI_OPTIONS_SECTION = "ForcedSpawnIniOptions";
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace DTAClient.Domain.Multiplayer
 
         public void Initialize()
         {
-            IniFile forcedOptionsIni = new IniFile(SafePath.CombineFilePath(ProgramConstants.GamePath, ClientConfiguration.Instance.MPMapsIniPath));
+            IniFile forcedOptionsIni = new IniFile(SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), ClientConfiguration.Instance.MPMapsIniPath));
             IniSection section = forcedOptionsIni.GetSection(Name) ?? new IniSection(Name);
 
             UntranslatedUIName = section.GetStringValue("UIName", Name);
@@ -169,7 +169,7 @@ namespace DTAClient.Domain.Multiplayer
 
         public List<IniFile> GetMapRulesIniFiles(Random pseudoRandom)
         {
-            var mapRules = new List<IniFile>() { new IniFile(SafePath.CombineFilePath(ProgramConstants.GamePath, BASE_INI_PATH, mapCodeININame)) };
+            var mapRules = new List<IniFile>() { new IniFile(SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), BASE_INI_PATH, mapCodeININame)) };
             if (randomizedMapCodeININames.Count == 0)
                 return mapRules;
 
@@ -181,7 +181,7 @@ namespace DTAClient.Domain.Multiplayer
 
             mapRules.AddRange(
                 from iniName in randomizedMapCodeININames.OrderBy(x => randomOrder[x]).Take(randomizedMapCodesCount)
-                select new IniFile(SafePath.CombineFilePath(ProgramConstants.GamePath, BASE_INI_PATH, iniName)));
+                select new IniFile(SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), BASE_INI_PATH, iniName)));
 
             return mapRules;
         }

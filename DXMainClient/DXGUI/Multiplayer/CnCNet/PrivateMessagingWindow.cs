@@ -134,7 +134,7 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             tabControl = new XNAClientTabControl(WindowManager);
             tabControl.Name = nameof(tabControl);
             tabControl.ClientRectangle = new Rectangle(34, 50, 0, 0);
-            tabControl.ClickSound = new EnhancedSoundEffect("button.wav");
+            tabControl.ClickSound = new EnhancedSoundEffect("Audio/SE/button.wav");
             tabControl.FontIndex = 1;
             tabControl.AddTab("Messages".L10N("Client:Main:MessagesTab"), UIDesignConstants.BUTTON_WIDTH_133);
             tabControl.AddTab("Friend List".L10N("Client:Main:FriendListTab"), UIDesignConstants.BUTTON_WIDTH_133);
@@ -218,9 +218,9 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             connectionManager.UserRemoved += ConnectionManager_UserRemoved;
             connectionManager.UserGameIndexUpdated += ConnectionManager_UserGameIndexUpdated;
 
-            sndMessageSound = new EnhancedSoundEffect("message.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundMessageCooldown);
+            sndMessageSound = new EnhancedSoundEffect("Audio/SE/message.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundMessageCooldown);
 
-            sndPrivateMessageSound = new EnhancedSoundEffect("pm.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundPrivateMessageCooldown);
+            sndPrivateMessageSound = new EnhancedSoundEffect("Audio/SE/pm.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundPrivateMessageCooldown);
 
             sndMessageSound.Enabled = UserINISettings.Instance.MessageSound;
 

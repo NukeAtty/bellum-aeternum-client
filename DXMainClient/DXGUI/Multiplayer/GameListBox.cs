@@ -191,9 +191,9 @@ namespace DTAClient.DXGUI.Multiplayer
         {
             base.Initialize();
 
-            txLockedGame = AssetLoader.LoadTexture("lockedgame.png");
+            txLockedGame = AssetLoader.LoadTexture("Icons/lockedgame.png");
             txIncompatibleGame = AssetLoader.LoadTexture("incompatible.png");
-            txPasswordedGame = AssetLoader.LoadTexture("passwordedgame.png");
+            txPasswordedGame = AssetLoader.LoadTexture("Icons/passwordedgame.png");
 
             panelGameInformation = new GameInformationPanel(WindowManager, mapLoader, gameLobby);
             panelGameInformation.Name = nameof(panelGameInformation);

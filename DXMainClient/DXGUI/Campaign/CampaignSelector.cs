@@ -36,9 +36,9 @@ namespace DTAClient.DXGUI.Campaign
 
         private static string[] DifficultyIniPaths = new string[]
         {
-            "INI/Map Code/Difficulty Easy.ini",
-            "INI/Map Code/Difficulty Medium.ini",
-            "INI/Map Code/Difficulty Hard.ini"
+            "Configs/Map Code/Difficulty Easy.ini",
+            "Configs/Map Code/Difficulty Medium.ini",
+            "Configs/Map Code/Difficulty Hard.ini"
         };
 
         public CampaignSelector(WindowManager windowManager, DiscordHandler discordHandler, CampaignTagSelector campaignTagSelector) : base(windowManager)
@@ -75,15 +75,15 @@ namespace DTAClient.DXGUI.Campaign
 
         private string[] filesToCheck = new string[]
         {
-            "INI/AI.ini",
-            "INI/AIE.ini",
-            "INI/Art.ini",
-            "INI/ArtE.ini",
-            "INI/Enhance.ini",
-            "INI/Rules.ini",
-            "INI/Map Code/Difficulty Hard.ini",
-            "INI/Map Code/Difficulty Medium.ini",
-            "INI/Map Code/Difficulty Easy.ini"
+            "Configs/AI.ini",
+            "Configs/AIE.ini",
+            "Configs/Art.ini",
+            "Configs/ArtE.ini",
+            "Configs/Enhance.ini",
+            "Configs/Rules.ini",
+            "Configs/Map Code/Difficulty Hard.ini",
+            "Configs/Map Code/Difficulty Medium.ini",
+            "Configs/Map Code/Difficulty Easy.ini"
         };
 
         private Mission missionToLaunch;
@@ -510,7 +510,7 @@ namespace DTAClient.DXGUI.Campaign
 
             spawnIni.WriteIniFile();
 
-            var difficultyIni = new IniFile(SafePath.CombineFilePath(ProgramConstants.GamePath, DifficultyIniPaths[trbDifficultySelector.Value]));
+            var difficultyIni = new IniFile(SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), DifficultyIniPaths[trbDifficultySelector.Value]));
             string difficultyName = DifficultyNames[trbDifficultySelector.Value];
 
             if (copyMapsToSpawnmapINI)
@@ -689,10 +689,10 @@ namespace DTAClient.DXGUI.Campaign
             Debug.Assert(AllMissions.Count == 0 && UniqueIDToMissions.Count == 0, "AllMissions and UniqueIDToMissions should be empty when ReadMissionList() is called. We didn't handle reloading missions yet.");
 
             if (!ClientConfiguration.Instance.IgnoreBattleIni && AllMissions.Count == 0)
-                ParseBattleIni("INI/Battle.ini");
+                ParseBattleIni("Configs/Battle.ini");
 
             if (AllMissions.Count == 0)
-                ParseBattleIni("INI/" + ClientConfiguration.Instance.BattleFSFileName);
+                ParseBattleIni("Configs/" + ClientConfiguration.Instance.BattleFSFileName);
 
             LoadCustomMissions();
 
@@ -736,7 +736,7 @@ namespace DTAClient.DXGUI.Campaign
         {
             Logger.Log("Attempting to parse " + path + " to populate mission list.");
 
-            FileInfo battleIniFileInfo = SafePath.GetFile(ProgramConstants.GamePath, path);
+            FileInfo battleIniFileInfo = SafePath.GetFile(ProgramConstants.GetBaseResourcePath(), path);
             if (!battleIniFileInfo.Exists)
             {
                 Logger.Log("File " + path + " not found. Ignoring.");

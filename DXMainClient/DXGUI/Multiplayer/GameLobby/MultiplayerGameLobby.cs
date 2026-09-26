@@ -137,11 +137,11 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             PingTextures = new Texture2D[5]
             {
-                AssetLoader.LoadTexture("ping0.png"),
-                AssetLoader.LoadTexture("ping1.png"),
-                AssetLoader.LoadTexture("ping2.png"),
-                AssetLoader.LoadTexture("ping3.png"),
-                AssetLoader.LoadTexture("ping4.png")
+                AssetLoader.LoadTexture("Icons/ping0.png"),
+                AssetLoader.LoadTexture("Icons/ping1.png"),
+                AssetLoader.LoadTexture("Icons/ping2.png"),
+                AssetLoader.LoadTexture("Icons/ping3.png"),
+                AssetLoader.LoadTexture("Icons/ping4.png")
             };
 
             NegotiationTextures = new Texture2D[2]
@@ -169,7 +169,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 StatusIndicators[i] = indicatorPlayerReady;
 
                 const string spectatorName = "Spectator";
-                AddSideToDropDown(ddPlayerSides[i], spectatorName, spectatorName.L10N("Client:Sides:SpectatorSide"), AssetLoader.LoadTexture("spectatoricon.png"));
+                AddSideToDropDown(ddPlayerSides[i], spectatorName, spectatorName.L10N("Client:Sides:SpectatorSide"), AssetLoader.LoadTexture("Icons/spectatoricon.png"));
             }
 
             lbChatMessages = FindChild<ChatListBox>(nameof(lbChatMessages));
@@ -188,11 +188,11 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             MapPreviewBox.LocalStartingLocationSelected += MapPreviewBox_LocalStartingLocationSelected;
             MapPreviewBox.StartingLocationApplied += MapPreviewBox_StartingLocationApplied;
 
-            sndJoinSound = new EnhancedSoundEffect("joingame.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyJoinCooldown);
-            sndLeaveSound = new EnhancedSoundEffect("leavegame.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyLeaveCooldown);
-            sndMessageSound = new EnhancedSoundEffect("message.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundMessageCooldown);
-            sndGetReadySound = new EnhancedSoundEffect("getready.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyGetReadyCooldown);
-            sndReturnSound = new EnhancedSoundEffect("return.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyReturnCooldown);
+            sndJoinSound = new EnhancedSoundEffect("Audio/SE/joingame.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyJoinCooldown);
+            sndLeaveSound = new EnhancedSoundEffect("Audio/SE/leavegame.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyLeaveCooldown);
+            sndMessageSound = new EnhancedSoundEffect("Audio/SE/message.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundMessageCooldown);
+            sndGetReadySound = new EnhancedSoundEffect("Audio/SE/getready.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyGetReadyCooldown);
+            sndReturnSound = new EnhancedSoundEffect("Audio/SE/return.wav", 0.0, 0.0, ClientConfiguration.Instance.SoundGameLobbyReturnCooldown);
 
             if (SavedGameManager.AreSavedGamesAvailable())
             {

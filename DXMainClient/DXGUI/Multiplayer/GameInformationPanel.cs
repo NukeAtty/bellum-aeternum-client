@@ -103,9 +103,9 @@ namespace DTAClient.DXGUI.Multiplayer
             if (AssetLoader.AssetExists("noMapPreview.png"))
                 noMapPreviewTexture = AssetLoader.LoadTexture("noMapPreview.png");
 
-            txLockedGame = AssetLoader.LoadTexture("lockedgame.png");
+            txLockedGame = AssetLoader.LoadTexture("Icons/lockedgame.png");
             txIncompatibleGame = AssetLoader.LoadTexture("incompatible.png");
-            txPasswordedGame = AssetLoader.LoadTexture("passwordedgame.png");
+            txPasswordedGame = AssetLoader.LoadTexture("Icons/passwordedgame.png");
 
             rightColumnPositionX = Width / 2 - columnMargin;
             mapPreviewPositionY = topStartingPositionY + (rowHeight * 2 + mapPreviewMargin); // 2 Labels down, incase map name spills to next line

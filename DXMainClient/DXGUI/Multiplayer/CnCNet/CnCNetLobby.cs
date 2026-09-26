@@ -570,8 +570,8 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
 
         private void PostUIInit()
         {
-            sndGameCreated = new EnhancedSoundEffect("gamecreated.wav");
-            sndGameInviteReceived = new EnhancedSoundEffect("pm.wav");
+            sndGameCreated = new EnhancedSoundEffect("Audio/SE/gamecreated.wav");
+            sndGameInviteReceived = new EnhancedSoundEffect("Audio/SE/pm.wav");
 
             cAdminNameColor = AssetLoader.GetColorFromString(ClientConfiguration.Instance.AdminNameColor);
 

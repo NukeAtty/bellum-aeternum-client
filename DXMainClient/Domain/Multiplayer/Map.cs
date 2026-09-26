@@ -624,7 +624,7 @@ namespace DTAClient.Domain.Multiplayer
 
             if (!string.IsNullOrEmpty(ExtraININame))
             {
-                string extraIniPath = SafePath.CombineFilePath(ProgramConstants.GamePath, "INI", "Map Code", ExtraININame);
+                string extraIniPath = SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), "Configs", "Map Code", ExtraININame);
                 Encoding extraIniEncoding = MapCodeHelper.GetMapEncoding(extraIniPath);
                 var extraIni = new IniFile(extraIniPath, extraIniEncoding);
                 IniFile.ConsolidateIniFiles(mapIni, extraIni);

@@ -104,11 +104,11 @@ namespace ClientCore
         public string MainMenuMusicName => _mainMenuMusicName ??= GetMainMenuMusicName();
         private string GetMainMenuMusicName()
         {
-            string raw = DTACnCNetClient_ini.GetStringValue(GENERAL, "MainMenuTheme", "mainmenu");
+            string raw = DTACnCNetClient_ini.GetStringValue(GENERAL, "MainMenuTheme", "Audio/BGM/mainmenu");
             string[] parts = raw.SplitWithCleanup();
             string chosen = parts.Length > 0
                 ? parts[new Random().Next(parts.Length)]
-                : "mainmenu";
+                : "Audio/BGM/mainmenu";
 
             return SafePath.CombineFilePath(chosen);
         }
@@ -377,7 +377,7 @@ namespace ClientCore
 
         public string ExtraExeCommandLineParameters => clientDefinitionsIni.GetStringValue(SETTINGS, "ExtraCommandLineParams", string.Empty);
 
-        public string MPMapsIniPath => SafePath.CombineFilePath(clientDefinitionsIni.GetStringValue(SETTINGS, "MPMapsPath", SafePath.CombineFilePath("INI", "MPMaps.ini")));
+        public string MPMapsIniPath => SafePath.CombineFilePath(clientDefinitionsIni.GetStringValue(SETTINGS, "MPMapsPath", SafePath.CombineFilePath("Configs", "MPMaps.ini")));
 
         public string KeyboardINI => clientDefinitionsIni.GetStringValue(SETTINGS, "KeyboardINI", "Keyboard.ini");
 

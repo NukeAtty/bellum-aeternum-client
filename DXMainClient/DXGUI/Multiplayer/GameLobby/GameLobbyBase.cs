@@ -251,10 +251,10 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             RankTextures = new Texture2D[4]
             {
-                AssetLoader.LoadTexture("rankNone.png"),
-                AssetLoader.LoadTexture("rankEasy.png"),
-                AssetLoader.LoadTexture("rankNormal.png"),
-                AssetLoader.LoadTexture("rankHard.png")
+                AssetLoader.LoadTexture("Icons/rankNone.png"),
+                AssetLoader.LoadTexture("Icons/rankEasy.png"),
+                AssetLoader.LoadTexture("Icons/rankNormal.png"),
+                AssetLoader.LoadTexture("Icons/rankHard.png")
             };
 
             MPColors = MultiplayerColor.LoadColors();
@@ -1515,6 +1515,99 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         }
 
         /// <summary>
+        /// Greys out colors and starting locations that are already taken, so that
+        /// players cannot select conflicting options:
+        /// - Colors: humans must be unique among themselves and cannot share with AI;
+        ///   AI may share colors among themselves.
+        /// - Starting locations: unique across all players, both humans and AI.
+        /// </summary>
+        protected void CheckTakenColorsAndStarts()
+        {
+            if (Players.Count == 0 && AIPlayers.Count == 0)
+                return;
+
+            // Colors taken by human players.
+            var humanColorIds = new HashSet<int>();
+            foreach (PlayerInfo p in Players)
+                if (p.ColorId > 0)
+                    humanColorIds.Add(p.ColorId);
+
+            // Colors taken by AI players.
+            var aiColorIds = new HashSet<int>();
+            foreach (PlayerInfo p in AIPlayers)
+                if (p.ColorId > 0)
+                    aiColorIds.Add(p.ColorId);
+
+            // Starting locations taken by all players (humans and AI).
+            var takenStartLocations = new HashSet<int>();
+            foreach (PlayerInfo p in Players)
+                if (p.StartingLocation > 0)
+                    takenStartLocations.Add(p.StartingLocation);
+            foreach (PlayerInfo p in AIPlayers)
+                if (p.StartingLocation > 0)
+                    takenStartLocations.Add(p.StartingLocation);
+
+            var disallowedColorIds = new HashSet<int>();
+            if (GameModeMap?.CoopInfo?.DisallowedPlayerColors != null)
+            {
+                foreach (int colorIndex in GameModeMap.CoopInfo.DisallowedPlayerColors)
+                {
+                    if (colorIndex >= 0 && colorIndex < MPColors.Count)
+                        disallowedColorIds.Add(colorIndex + 1);
+                }
+            }
+
+            // Human players: cannot share a color with another human or an AI.
+            for (int pId = 0; pId < Players.Count; pId++)
+            {
+                int ownColorId = Players[pId].ColorId;
+                XNAClientColorDropDown ddColor = ddPlayerColors[pId];
+                for (int i = 1; i < ddColor.Items.Count; i++)
+                {
+                    bool unavailable = disallowedColorIds.Contains(i) ||
+                        ((humanColorIds.Contains(i) || aiColorIds.Contains(i)) && i != ownColorId);
+                    ddColor.Items[i].Selectable = !unavailable;
+                    ddColor.SetItemColorEnabled(i, !unavailable);
+                }
+            }
+
+            // AI players: may share a color with other AI, but not with humans.
+            for (int aiId = 0; aiId < AIPlayers.Count; aiId++)
+            {
+                int index = Players.Count + aiId;
+                int ownColorId = AIPlayers[aiId].ColorId;
+                XNAClientColorDropDown ddColor = ddPlayerColors[index];
+                for (int i = 1; i < ddColor.Items.Count; i++)
+                {
+                    bool unavailable = disallowedColorIds.Contains(i) ||
+                        (humanColorIds.Contains(i) && i != ownColorId);
+                    ddColor.Items[i].Selectable = !unavailable;
+                    ddColor.SetItemColorEnabled(i, !unavailable);
+                }
+            }
+
+            // Starting locations: unique across all players (humans and AI).
+            for (int pId = 0; pId < Players.Count + AIPlayers.Count; pId++)
+            {
+                int ownStartLocation = pId < Players.Count
+                    ? Players[pId].StartingLocation
+                    : AIPlayers[pId - Players.Count].StartingLocation;
+                XNAClientDropDown ddStart = ddPlayerStarts[pId];
+                for (int i = 1; i < ddStart.Items.Count; i++)
+                {
+                    if (!int.TryParse(ddStart.Items[i].Text, out int location))
+                        continue;
+
+                    bool allowedLocation = GameModeMap == null ||
+                        GameModeMap.AllowedStartingLocations.Contains(location);
+                    bool unavailable = !allowedLocation ||
+                        (takenStartLocations.Contains(location) && location != ownStartLocation);
+                    ddStart.Items[i].Selectable = !unavailable;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets a list of side indexes that are disallowed for human or computer players.
         /// </summary>
         /// <returns>A list of disallowed side indexes.</returns>
@@ -1945,7 +2038,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             IniFile mapIni = Map.GetMapIni();
 
-            IniFile globalCodeIni = new IniFile(SafePath.CombineFilePath(ProgramConstants.GamePath, "INI", "Map Code", "GlobalCode.ini"));
+            IniFile globalCodeIni = new IniFile(SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), "Configs", "Map Code", "GlobalCode.ini"));
 
             foreach (IniFile iniFile in GameMode.GetMapRulesIniFiles(pseudoRandom))
                 MapCodeHelper.ApplyMapCode(mapIni, iniFile);
@@ -1954,7 +2047,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             if (isMultiplayer)
             {
-                IniFile mpGlobalCodeIni = new IniFile(SafePath.CombineFilePath(ProgramConstants.GamePath, "INI", "Map Code", "MultiplayerGlobalCode.ini"));
+                IniFile mpGlobalCodeIni = new IniFile(SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), "Configs", "Map Code", "MultiplayerGlobalCode.ini"));
                 MapCodeHelper.ApplyMapCode(mapIni, mpGlobalCodeIni);
             }
             else
@@ -2431,6 +2524,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             UpdateMapPreviewBoxEnabledStatus();
 
             CheckDisallowedSides();
+            CheckTakenColorsAndStarts();
 
             PlayerUpdatingInProgress = false;
         }

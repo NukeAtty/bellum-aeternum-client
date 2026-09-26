@@ -43,7 +43,7 @@ namespace DTAClient.DXGUI.Multiplayer
 
             adminGameIcon = AssetLoader.TextureFromImage(Image.Load(cncnetIconStream));
             unknownGameIcon = AssetLoader.TextureFromImage(Image.Load(unknownIconStream));
-            friendIcon = AssetLoader.LoadTexture("friendicon.png");
+            friendIcon = AssetLoader.LoadTexture("Icons/friendicon.png");
             ignoreIcon = AssetLoader.LoadTexture("ignoreicon.png");
 
             const string voiceIconName = "voiceicon.png";
