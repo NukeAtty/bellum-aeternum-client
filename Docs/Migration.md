@@ -17,7 +17,7 @@ This document lists all the breaking changes and how to address them. Each secti
 
 - **The player count now follows the selected map's maximum player count.** When switching to a map whose `MaxPlayers` is lower than the current number of players, AI players are removed first, and then any excess human players are removed from the bottom of the list upwards (in multiplayer lobbies, the host kicks them). In addition, AI players can no longer become spectators, and the number of AI players can no longer exceed the map's maximum player count.
 
-- **Options window tabs are now configurable via INI and laid out vertically.** The tabs can be defined with `[OptionsWindowTab0]` … `[OptionsWindowTab6]` sections in `OptionsWindow.ini`, each supporting `Text`, `Width`, `Texture` and `TexturePressed`. The tabs are laid out vertically via the new `ClientGUI.VerticalTabControl` control, so no `Rampastring.XNAUI` submodule changes are required.
+- **Options window tabs are now configurable via INI.** The tabs can be defined with `[OptionsWindowTab0]` … `[OptionsWindowTab6]` sections in `OptionsWindow.ini`, each supporting `Text`, `Width`, `Texture` and `TexturePressed`. Additionally, setting `Vertical=yes` in `[tabControl]` lays the tabs out vertically instead of horizontally. The tab layout is now implemented in the `ClientGUI.ClientTabControl` control, so no `Rampastring.XNAUI` submodule changes are required.
 
 ## 2.14.0
 

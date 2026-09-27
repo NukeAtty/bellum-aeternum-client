@@ -27,7 +27,7 @@ namespace DTAClient.DXGUI.Generic
 
         public event EventHandler OnForceUpdate;
 
-        private VerticalTabControl tabControl;
+        private ClientTabControl tabControl;
 
         private XNAOptionsPanel[] optionsPanels;
         private ComponentsPanel componentsPanel;
@@ -45,7 +45,7 @@ namespace DTAClient.DXGUI.Generic
             ClientRectangle = new Rectangle(0, 0, 576 + UIDesignConstants.BUTTON_WIDTH_92, 475);
             BackgroundTexture = AssetLoader.LoadTextureUncached("optionsbg.png");
 
-            tabControl = new VerticalTabControl(WindowManager);
+            tabControl = new ClientTabControl(WindowManager);
             tabControl.Name = "tabControl";
             tabControl.ClientRectangle = new Rectangle(12, 12, 0, 0);
             tabControl.FontIndex = 1;
@@ -133,6 +133,9 @@ namespace DTAClient.DXGUI.Generic
 
         private void BuildTabs(IniFile iniFile)
         {
+            // Must be set before AddTab so tab size accumulation is correct.
+            tabControl.Vertical = iniFile.GetBooleanValue("tabControl", "Vertical", false);
+
             for (int i = 0; i < DefaultTabs.Length; i++)
             {
                 string section = TAB_SECTION_PREFIX + i;
