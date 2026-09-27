@@ -40,6 +40,17 @@ namespace DTAClient.Domain.Multiplayer
         public string UntranslatedUIName { get; private set; }
 
         /// <summary>
+        /// A description of the game mode, shown in the game lobby.
+        /// Empty if the game mode does not define one.
+        /// </summary>
+        public string Description { get; private set; }
+
+        /// <summary>
+        /// The original description of the game mode before translation.
+        /// </summary>
+        public string UntranslatedDescription { get; private set; }
+
+        /// <summary>
         /// List of side indices players cannot select in this game mode.
         /// </summary>
         public List<int> DisallowedPlayerSides = new List<int>();
@@ -94,11 +105,14 @@ namespace DTAClient.Domain.Multiplayer
 
         public void Initialize()
         {
-            IniFile forcedOptionsIni = new IniFile(SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), ClientConfiguration.Instance.MPMapsIniPath));
+            IniFile forcedOptionsIni = new IniFile(SafePath.CombineFilePath(ProgramConstants.GamePath, ClientConfiguration.Instance.MPMapsIniPath));
             IniSection section = forcedOptionsIni.GetSection(Name) ?? new IniSection(Name);
 
             UntranslatedUIName = section.GetStringValue("UIName", Name);
             UIName = UntranslatedUIName.L10N($"INI:GameModes:{Name}:UIName");
+
+            UntranslatedDescription = section.GetStringValue("Description", string.Empty);
+            Description = UntranslatedDescription.L10N($"INI:GameModes:{Name}:Description");
 
             InitializeBaseSettingsFromIniSection(section, isCustomMap: false);
 

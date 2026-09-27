@@ -172,6 +172,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         protected XNALabel lblMapAuthor;
         protected XNALabel lblGameMode;
         protected XNALabel lblMapSize;
+        protected XNALabel lblGameModeDescription;
+        protected XNAPanel lblGameModeDescriptionBG;
 
         protected MapPreviewBox MapPreviewBox;
 
@@ -215,6 +217,22 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         /// The maximum number of players allowed in this lobby.
         /// </summary>
         protected virtual int MaxPlayerCount => MAX_PLAYER_COUNT;
+
+        /// <summary>
+        /// The effective maximum number of players allowed for the currently
+        /// selected map. Falls back to <see cref="MAX_PLAYER_COUNT"/> when the
+        /// map does not specify a maximum player count.
+        /// </summary>
+        protected int EffectiveMaxPlayerCount =>
+            GameModeMap != null && GameModeMap.MaxPlayers > 0
+                ? Math.Min(GameModeMap.MaxPlayers, MAX_PLAYER_COUNT)
+                : MAX_PLAYER_COUNT;
+
+        /// <summary>
+        /// Whether game modes that are multiplayer-only should be hidden from
+        /// the game mode filter. Overridden to return true in the Skirmish lobby.
+        /// </summary>
+        protected virtual bool HideMultiplayerOnlyGameModes => false;
 
         protected List<int[]> RandomSelectors = new List<int[]>();
 
@@ -292,6 +310,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             lblMapAuthor = FindChild<XNALabel>(nameof(lblMapAuthor));
             lblGameMode = FindChild<XNALabel>(nameof(lblGameMode));
             lblMapSize = FindChild<XNALabel>(nameof(lblMapSize));
+            lblGameModeDescription = FindChild<XNALabel>(nameof(lblGameModeDescription), optional: true);
+            lblGameModeDescriptionBG = FindChild<XNAPanel>(nameof(lblGameModeDescriptionBG), optional: true);
 
             lbGameModeMapList = FindChild<XNAMultiColumnListBox>("lbMapList"); // lbMapList for backwards compatibility
             lbGameModeMapList.SelectedIndexChanged += LbGameModeMapList_SelectedIndexChanged;
@@ -339,7 +359,12 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             ddGameModeMapFilter.AddItem(CreateGameFilterItem(FavoriteMapsLabel, new GameModeMapFilter(GetFavoriteGameModeMaps)));
             foreach (GameMode gm in GameModeMaps.GameModes)
+            {
+                if (HideMultiplayerOnlyGameModes && gm.MultiplayerOnly == true)
+                    continue;
+
                 ddGameModeMapFilter.AddItem(CreateGameFilterItem(gm.UIName, new GameModeMapFilter(GetGameModeMaps(gm))));
+            }
 
             lblGameModeSelect = FindChild<XNALabel>(nameof(lblGameModeSelect));
 
@@ -1027,7 +1052,12 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             ddGameModeMapFilter.AddItem(CreateGameFilterItem(FavoriteMapsLabel, new GameModeMapFilter(GetFavoriteGameModeMaps)));
             foreach (GameMode gm in GameModeMaps.GameModes)
+            {
+                if (HideMultiplayerOnlyGameModes && gm.MultiplayerOnly == true)
+                    continue;
+
                 ddGameModeMapFilter.AddItem(CreateGameFilterItem(gm.UIName, new GameModeMapFilter(GetGameModeMaps(gm))));
+            }
 
             int selectedIndex = ddGameModeMapFilter.Items.FindIndex(i => i.Text == currentSelection);
             ddGameModeMapFilter.SelectedIndex = selectedIndex >= 0 ? selectedIndex : 0;
@@ -1062,7 +1092,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             {
                 Text = uiName ?? name.L10N($"INI:Sides:{name}"),
                 Tag = name,
-                Texture = texture ?? LoadTextureOrNull(name + "icon.png"),
+                Texture = texture ?? LoadTextureOrNull("Icons/Sides/" + name + "icon.png"),
             };
             dd.AddItem(item);
         }
@@ -1122,7 +1152,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                     ddPlayerName.Y, sideWidth, DROP_DOWN_HEIGHT);
 
                 const string randomName = "Random";
-                AddSideToDropDown(ddPlayerSide, randomName, randomName.L10N("Client:Sides:RandomSide"), LoadTextureOrNull("randomicon.png"));
+                AddSideToDropDown(ddPlayerSide, randomName, randomName.L10N("Client:Sides:RandomSide"), LoadTextureOrNull("Icons/Sides/randomicon.png"));
 
                 foreach (string randomSelector in selectorNames)
                     AddSideToDropDown(ddPlayerSide, randomSelector);
@@ -1488,6 +1518,20 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
                 foreach (PlayerInfo pInfo in playerInfos)
                 {
+                    var dd = ddPlayerSides[pInfo.Index];
+                    if (dd.Items.Count > GetSpectatorSideIndex())
+                        dd.Items[SideCount + RandomSelectorCount].Selectable = false;
+                }
+            }
+            else if (!forHumanPlayers)
+            {
+                // AI players cannot be spectators.
+
+                foreach (PlayerInfo pInfo in playerInfos)
+                {
+                    if (pInfo.SideId == GetSpectatorSideIndex())
+                        pInfo.SideId = defaultSide;
+
                     var dd = ddPlayerSides[pInfo.Index];
                     if (dd.Items.Count > GetSpectatorSideIndex())
                         dd.Items[SideCount + RandomSelectorCount].Selectable = false;
@@ -2349,7 +2393,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             }
 
             AIPlayers.Clear();
-            for (int cmbId = Players.Count; cmbId < MAX_PLAYER_COUNT; cmbId++)
+            for (int cmbId = Players.Count; cmbId < EffectiveMaxPlayerCount; cmbId++)
             {
                 XNADropDown dd = ddPlayerNames[cmbId];
                 dd.Items[0].Text = "-";
@@ -2517,7 +2561,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 ddPlayerTeams[ddIndex].AllowDropDown = false;
             }
 
-            if (allowOptionsChange && Players.Count + AIPlayers.Count < MAX_PLAYER_COUNT)
+            if (allowOptionsChange && Players.Count + AIPlayers.Count < EffectiveMaxPlayerCount)
                 ddPlayerNames[Players.Count + AIPlayers.Count].AllowDropDown = true;
 
             MapPreviewBox.UpdateStartingLocationTexts();
@@ -2564,6 +2608,13 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 lblMapAuthor.Text = "By Unknown Author".L10N("Client:Main:AuthorByUnknown");
                 lblGameMode.Text = "Game mode: Unknown".L10N("Client:Main:GameModeUnknown");
                 lblMapSize.Text = "Size: Not available".L10N("Client:Main:MapSizeUnknown");
+
+                if (lblGameModeDescription != null)
+                    lblGameModeDescription.Visible = false;
+
+                if (lblGameModeDescriptionBG != null)
+                    lblGameModeDescriptionBG.Visible = false;
+
                 return;
             }
 
@@ -2571,6 +2622,18 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             lblMapAuthor.Text = "By".L10N("Client:Main:AuthorBy") + " " + Renderer.GetSafeString(Map.Author, lblMapAuthor.FontIndex);
             lblGameMode.Text = "Game mode:".L10N("Client:Main:GameModeLabel") + " " + GameMode.UIName;
             lblMapSize.Text = "Size:".L10N("Client:Main:MapSize") + " " + Map.GetSizeString();
+
+            if (lblGameModeDescription != null)
+            {
+                bool showDescription = !string.IsNullOrEmpty(GameMode.Description);
+
+                lblGameModeDescription.Visible = showDescription;
+                if (lblGameModeDescriptionBG != null)
+                    lblGameModeDescriptionBG.Visible = showDescription;
+
+                if (showDescription)
+                    lblGameModeDescription.Text = GameMode.Description.Replace("@", Environment.NewLine);
+            }
         }
 
         /// <summary>

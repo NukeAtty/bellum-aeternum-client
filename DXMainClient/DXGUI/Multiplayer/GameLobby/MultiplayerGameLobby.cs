@@ -169,7 +169,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 StatusIndicators[i] = indicatorPlayerReady;
 
                 const string spectatorName = "Spectator";
-                AddSideToDropDown(ddPlayerSides[i], spectatorName, spectatorName.L10N("Client:Sides:SpectatorSide"), AssetLoader.LoadTexture("Icons/spectatoricon.png"));
+                AddSideToDropDown(ddPlayerSides[i], spectatorName, spectatorName.L10N("Client:Sides:SpectatorSide"), AssetLoader.LoadTexture("Icons/Sides/spectatoricon.png"));
             }
 
             lbChatMessages = FindChild<ChatListBox>(nameof(lbChatMessages));
@@ -1161,6 +1161,8 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         {
             base.ChangeMap(gameModeMap);
 
+            TrimPlayersToMapCapacity(gameModeMap);
+
             bool resetAutoReady = gameModeMap?.GameMode == null || gameModeMap?.Map == null;
 
             ClearReadyStatuses(resetAutoReady);
@@ -1172,6 +1174,44 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             //if (IsHost)
             //    OnGameOptionChanged();
+        }
+
+        /// <summary>
+        /// Removes players so that the player count matches the selected map's
+        /// maximum player count. AI players are removed first, then excess human
+        /// players are removed from the bottom of the list upwards.
+        /// </summary>
+        private void TrimPlayersToMapCapacity(GameModeMap gameModeMap)
+        {
+            if (!IsHost || gameModeMap == null || gameModeMap.MaxPlayers <= 0)
+                return;
+
+            bool removed = false;
+
+            // Remove AI players first.
+            while (Players.Count + AIPlayers.Count > gameModeMap.MaxPlayers && AIPlayers.Count > 0)
+            {
+                AIPlayers.RemoveAt(AIPlayers.Count - 1);
+                removed = true;
+            }
+
+            // Then remove excess human players from the bottom of the list upwards.
+            int excessHumans = Players.Count + AIPlayers.Count - gameModeMap.MaxPlayers;
+            for (int i = Players.Count - 1; i >= 1 && excessHumans > 0; i--)
+            {
+                if (Players[i].Name == ProgramConstants.PLAYERNAME)
+                    continue;
+
+                KickPlayer(i);
+                excessHumans--;
+                removed = true;
+            }
+
+            if (removed)
+            {
+                CopyPlayerDataToUI();
+                BroadcastPlayerOptions();
+            }
         }
 
         protected override void ToggleFavoriteMap()

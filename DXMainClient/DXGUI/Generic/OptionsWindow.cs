@@ -27,7 +27,7 @@ namespace DTAClient.DXGUI.Generic
 
         public event EventHandler OnForceUpdate;
 
-        private XNAClientTabControl tabControl;
+        private VerticalTabControl tabControl;
 
         private XNAOptionsPanel[] optionsPanels;
         private ComponentsPanel componentsPanel;
@@ -45,20 +45,11 @@ namespace DTAClient.DXGUI.Generic
             ClientRectangle = new Rectangle(0, 0, 576 + UIDesignConstants.BUTTON_WIDTH_92, 475);
             BackgroundTexture = AssetLoader.LoadTextureUncached("optionsbg.png");
 
-            tabControl = new XNAClientTabControl(WindowManager);
+            tabControl = new VerticalTabControl(WindowManager);
             tabControl.Name = "tabControl";
-            tabControl.ClientRectangle = new Rectangle(12, 12, 0, 23);
+            tabControl.ClientRectangle = new Rectangle(12, 12, 0, 0);
             tabControl.FontIndex = 1;
             tabControl.ClickSound = new EnhancedSoundEffect("Audio/SE/button.wav");
-            tabControl.AddTab("Display".L10N("Client:DTAConfig:TabDisplay"), UIDesignConstants.BUTTON_WIDTH_92);
-            tabControl.AddTab("Audio".L10N("Client:DTAConfig:TabAudio"), UIDesignConstants.BUTTON_WIDTH_92);
-            tabControl.AddTab("Game".L10N("Client:DTAConfig:TabGame"), UIDesignConstants.BUTTON_WIDTH_92);
-            tabControl.AddTab("CnCNet".L10N("Client:DTAConfig:TabCnCNet"), UIDesignConstants.BUTTON_WIDTH_92);
-            tabControl.AddTab("Updater".L10N("Client:DTAConfig:TabUpdater"), UIDesignConstants.BUTTON_WIDTH_92);
-            tabControl.AddTab("Components".L10N("Client:DTAConfig:TabComponents"), UIDesignConstants.BUTTON_WIDTH_92);
-
-            tabControl.AddTab("Storage".L10N("Client:DTAConfig:TabStorage"), UIDesignConstants.BUTTON_WIDTH_92);
-
             tabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
 
             var btnCancel = new XNAClientButton(WindowManager);
@@ -90,14 +81,6 @@ namespace DTAClient.DXGUI.Generic
                 new StorageOptionsPanel(WindowManager, UserINISettings.Instance),
             };
 
-            if (ClientConfiguration.Instance.ModMode || Updater.UpdateMirrors == null || Updater.UpdateMirrors.Count < 1)
-            {
-                tabControl.MakeUnselectable(4);
-                tabControl.MakeUnselectable(5);
-            }
-            else if (Updater.CustomComponents == null || Updater.CustomComponents.Count < 1)
-                tabControl.MakeUnselectable(5);
-
             foreach (var panel in optionsPanels)
             {
                 AddChild(panel);
@@ -113,6 +96,14 @@ namespace DTAClient.DXGUI.Generic
 
             base.Initialize();
 
+            if (ClientConfiguration.Instance.ModMode || Updater.UpdateMirrors == null || Updater.UpdateMirrors.Count < 1)
+            {
+                tabControl.MakeUnselectable(4);
+                tabControl.MakeUnselectable(5);
+            }
+            else if (Updater.CustomComponents == null || Updater.CustomComponents.Count < 1)
+                tabControl.MakeUnselectable(5);
+
             CenterOnParent();
         }
 
@@ -125,10 +116,34 @@ namespace DTAClient.DXGUI.Generic
         /// <param name="iniFile">The INI file.</param>
         protected override void GetINIAttributes(IniFile iniFile)
         {
+            BuildTabs(iniFile);
+
             base.GetINIAttributes(iniFile);
 
             foreach (var panel in optionsPanels)
                 panel.ParseUserOptions(iniFile);
+        }
+
+        private const string TAB_SECTION_PREFIX = "OptionsWindowTab";
+
+        private static readonly string[] DefaultTabs =
+        {
+            "Display", "Audio", "Game", "CnCNet", "Updater", "Components", "Storage",
+        };
+
+        private void BuildTabs(IniFile iniFile)
+        {
+            for (int i = 0; i < DefaultTabs.Length; i++)
+            {
+                string section = TAB_SECTION_PREFIX + i;
+
+                string text = iniFile.GetStringValue(section, "Text", DefaultTabs[i]);
+                int width = iniFile.GetIntValue(section, "Width", UIDesignConstants.BUTTON_WIDTH_92);
+                string texture = iniFile.GetStringValue(section, "Texture", width + "pxtab");
+                string pressedTexture = iniFile.GetStringValue(section, "TexturePressed", texture + "_c");
+
+                tabControl.AddTab(text.L10N($"Client:DTAConfig:Tab{text}"), width, texture, pressedTexture);
+            }
         }
 
         private void TabControl_SelectedIndexChanged(object sender, EventArgs e)

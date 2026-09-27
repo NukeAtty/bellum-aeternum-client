@@ -21,18 +21,22 @@ namespace ClientGUI
 
         public void AddTab(string text, int width)
         {
-            string tabAssetName = width + "pxtab";
+            AddTab(text, width, width + "pxtab", width + "pxtab_c");
+        }
 
-            if (AssetLoader.AssetExists(tabAssetName + ".png"))
-            {
-                AddTab(text, AssetLoader.LoadTexture(tabAssetName + ".png"),
-                    AssetLoader.LoadTexture(tabAssetName + "_c.png"));
-            }
-            else
-            {
-                AddTab(text, AssetLoader.LoadTexture(width + "pxbtn.png"),
-                    AssetLoader.LoadTexture(width + "pxbtn_c.png"));
-            }
+        public void AddTab(string text, int width, string textureName, string pressedTextureName)
+        {
+            if (!AssetLoader.AssetExists(textureName + ".png"))
+                textureName = width + "pxtab";
+
+            if (!AssetLoader.AssetExists(textureName + ".png"))
+                textureName = width + "pxbtn";
+
+            if (!AssetLoader.AssetExists(pressedTextureName + ".png"))
+                pressedTextureName = textureName + "_c";
+
+            AddTab(text, AssetLoader.LoadTexture(textureName + ".png"),
+                AssetLoader.LoadTexture(pressedTextureName + ".png"));
         }
     }
 }

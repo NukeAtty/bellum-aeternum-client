@@ -410,9 +410,9 @@ namespace DTAClient.DXGUI.Generic
 
             sideTextures = new Texture2D[sides.Length + 1];
             for (int i = 0; i < sides.Length; i++)
-                sideTextures[i] = AssetLoader.LoadTexture(sides[i].Name + "icon.png");
+                sideTextures[i] = AssetLoader.LoadTexture("Icons/Sides/" + sides[i].Name + "icon.png");
 
-            sideTextures[sides.Length] = AssetLoader.LoadTexture("Icons/spectatoricon.png");
+            sideTextures[sides.Length] = AssetLoader.LoadTexture("Icons/Sides/spectatoricon.png");
 
             mpColors = MultiplayerColor.LoadColors();
 

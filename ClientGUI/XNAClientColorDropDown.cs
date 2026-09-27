@@ -26,7 +26,7 @@ namespace ClientGUI
         {
             ColorTextureWidth = Height - VERTICAL_PADDING;
             ColorTextureHeight = Height - HORIZONTAL_PADDING;
-            RandomColorTexture = AssetLoader.LoadTexture("randomicon.png");
+            RandomColorTexture = AssetLoader.LoadTexture("Icons/Sides/randomicon.png");
             DisabledItemTexture = AssetLoader.CreateTexture(DisabledItemColor, ColorTextureWidth, ColorTextureHeight);
         }
 

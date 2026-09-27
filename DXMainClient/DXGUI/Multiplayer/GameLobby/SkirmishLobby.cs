@@ -52,7 +52,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             //MapPreviewBox.EnableContextMenu = true;
 
             const string spectatorName = "Spectator";
-            AddSideToDropDown(ddPlayerSides[0], spectatorName, spectatorName.L10N("Client:Sides:SpectatorSide"), AssetLoader.LoadTexture("Icons/spectatoricon.png"));
+            AddSideToDropDown(ddPlayerSides[0], spectatorName, spectatorName.L10N("Client:Sides:SpectatorSide"), AssetLoader.LoadTexture("Icons/Sides/spectatoricon.png"));
 
             MapPreviewBox.LocalStartingLocationSelected += MapPreviewBox_LocalStartingLocationSelected;
             MapPreviewBox.StartingLocationApplied += MapPreviewBox_StartingLocationApplied;
@@ -160,6 +160,24 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             return null;
         }
+
+        /// <summary>
+        /// When the selected map's maximum player count is lower than the current
+        /// number of players, removes AI players first so that the player count
+        /// matches the map's capacity.
+        /// </summary>
+        protected override void ChangeMap(GameModeMap gameModeMap)
+        {
+            if (gameModeMap != null && gameModeMap.MaxPlayers > 0)
+            {
+                while (Players.Count + AIPlayers.Count > gameModeMap.MaxPlayers && AIPlayers.Count > 0)
+                    AIPlayers.RemoveAt(AIPlayers.Count - 1);
+            }
+
+            base.ChangeMap(gameModeMap);
+        }
+
+        protected override bool HideMultiplayerOnlyGameModes => true;
 
         protected override void BtnLaunchGame_LeftClick(object sender, EventArgs e)
         {

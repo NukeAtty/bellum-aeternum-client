@@ -5,6 +5,20 @@ This document lists all the breaking changes and how to address them. Each secti
 > [!NOTE]
 > You should always delete the `Binaries` and `BinariesNET8` folders when updating. See [How to update to latest client version](HowToUpdate.md) guide for a step-by-step process of updating the client binaries in your mod/game package.
 
+## Unreleased
+
+- **Side, random selector and spectator icons are now loaded from `Icons/Sides/`.** The client previously loaded `<side name>icon.png`, `<random selector name>icon.png` and `randomicon.png` from the `Resources` root, and `spectatoricon.png` from `Icons/`. Move these files into `Resources/Icons/Sides/`. The code now loads them from `Icons/Sides/<name>icon.png` and `Icons/Sides/spectatoricon.png`.
+
+- **`MPMapsPath` is now resolved relative to the game directory.** Previously the map loader resolved `MPMapsPath` against the game directory while game-mode initialization resolved it against the `Resources` directory, which duplicated the `Resources` prefix for configurations whose `MPMapsPath` already included it. It is now resolved consistently against the game directory, matching the map loader.
+
+- **Game modes can now define a `Description`.** Add `Description=` to a game mode's section in `MPMaps.ini` to show a description in the game lobby (with an optional background bar). Use `@` for line breaks. The text is localized via the `INI:GameModes:<Name>:Description` translation key. The label and background bar are defined as `lblGameModeDescription` and `lblGameModeDescriptionBG` in `GameLobbyBase.ini`.
+
+- **Game modes with `MultiplayerOnly=yes` are hidden from the Skirmish lobby.** They no longer appear in the Skirmish lobby's game-mode filter. LAN and CnCNet lobbies are unaffected.
+
+- **The player count now follows the selected map's maximum player count.** When switching to a map whose `MaxPlayers` is lower than the current number of players, AI players are removed first, and then any excess human players are removed from the bottom of the list upwards (in multiplayer lobbies, the host kicks them). In addition, AI players can no longer become spectators, and the number of AI players can no longer exceed the map's maximum player count.
+
+- **Options window tabs are now configurable via INI and laid out vertically.** The tabs can be defined with `[OptionsWindowTab0]` … `[OptionsWindowTab6]` sections in `OptionsWindow.ini`, each supporting `Text`, `Width`, `Texture` and `TexturePressed`. The tabs are laid out vertically via the new `ClientGUI.VerticalTabControl` control, so no `Rampastring.XNAUI` submodule changes are required.
+
 ## 2.14.0
 
 - The client now defaults to Dynamic (V3) tunnel mode. If you need the old V2 behavior, set `TunnelMode=2` in `[MultiPlayer]` of `Resources/UserDefaults.ini`.

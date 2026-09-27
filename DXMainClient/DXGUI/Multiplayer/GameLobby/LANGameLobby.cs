@@ -334,6 +334,20 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             UpdateDiscordPresence();
         }
 
+        protected override void KickPlayer(int playerIndex)
+        {
+            if (playerIndex >= Players.Count)
+                return;
+
+            if (Players[playerIndex] is LANPlayerInfo lanPlayer)
+            {
+                AddNotice(string.Format("Kicking {0} from the game...".L10N("Client:Main:KickPlayer"), lanPlayer.Name));
+
+                if (lanPlayer.TcpClient.Connected)
+                    lanPlayer.TcpClient.Close();
+            }
+        }
+
         private void LpInfo_ConnectionLost(object sender, EventArgs e)
         {
             AddCallback(new Action<LANPlayerInfo>(HandleConnectionLost), (LANPlayerInfo)sender);
