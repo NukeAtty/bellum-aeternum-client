@@ -24,7 +24,7 @@ namespace DTAClient.Domain.Multiplayer.CnCNet
             GameList = new List<CnCNetGame>();
 
             // The only supported mod.
-            var game = new CustomCnCNetGame("beicon.png")
+            var game = new CustomCnCNetGame("Icons/beicon.png")
             {
                 ChatChannel = "#bellum-aeternum",
                 ClientExecutableName = "BellumAeternum.exe",
