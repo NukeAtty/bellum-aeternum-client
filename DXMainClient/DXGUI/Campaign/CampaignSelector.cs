@@ -834,7 +834,7 @@ namespace DTAClient.DXGUI.Campaign
                 }
 
                 if (!string.IsNullOrEmpty(mission.IconPath))
-                    item.Texture = AssetLoader.LoadTexture(mission.IconPath + "icon.png");
+                    item.Texture = AssetLoader.LoadTexture("Icons/Sides/" + mission.IconPath + "icon.png");
 
                 lbCampaignList.AddItem(item);
             }
