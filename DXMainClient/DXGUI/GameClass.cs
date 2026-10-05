@@ -532,11 +532,7 @@ namespace DTAClient.DXGUI
                     // during Initialize before the WinForms message pump is running, races the
                     // GraphicsDevice reset against WM_ACTIVATE messages, which crashes inside
                     // MonoGame's WinFormsGameWindow.OnDeactivate.
-                    wm.AddCallback(new Action(() =>
-                    {
-                        graphics.IsFullScreen = true;
-                        graphics.ApplyChanges();
-                    }));
+                    wm.AddCallback(new Action(() => EnterFullScreenMode(wm)));
                 }
                 else
                 {
@@ -552,6 +548,27 @@ namespace DTAClient.DXGUI
             wm.IntegerScalingOnly = integerScale;
             wm.SetRenderResolution(renderResolutionX, renderResolutionY);
         }
+
+#if !XNA
+        /// <summary>
+        /// Enters fullscreen mode on the first game loop frame.
+        /// </summary>
+        private static void EnterFullScreenMode(WindowManager wm)
+        {
+#if WINFORMS
+            // HardwareModeSwitch is disabled, so switching IsFullScreen would only
+            // reset the graphics device before maximizing the borderless window.
+            // The device reset races WM_ACTIVATE messages and crashes inside
+            // MonoGame's WinFormsGameWindow.OnDeactivate, so we skip it and just
+            // maximize the borderless window instead.
+            if (Control.FromHandle(wm.GetWindowHandle()) is Form form)
+                form.WindowState = FormWindowState.Maximized;
+#else
+            graphics.IsFullScreen = true;
+            graphics.ApplyChanges();
+#endif
+        }
+#endif
     }
 
     /// <summary>
