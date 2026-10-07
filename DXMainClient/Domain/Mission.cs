@@ -48,6 +48,7 @@ namespace DTAClient.Domain
             CodeName = missionCodeName;
             CustomMissionID = ComputeCustomMissionID(missionCodeName);
             PreviewImage = missionSection.GetStringValue("PreviewImage", string.Empty);
+            Category = missionSection.GetStringValue(nameof(Category), string.Empty);
         }
 
         public static Mission NewCustomMission(IniSection clientMissionConfigSection, string missionCodeName, string scenario, IniSection? gameMissionConfigSection)
@@ -106,6 +107,12 @@ namespace DTAClient.Domain
         public IniSection? GameMissionConfigSection { get; set; }
 
         public string PreviewImage { get; private set; }
+
+        /// <summary>
+        /// The campaign category this mission belongs to (from the "Category" key in Battle(E).ini).
+        /// Used to filter missions by the campaign category selector.
+        /// </summary>
+        public string Category { get; private set; }
 
         public bool TryGetScenarioFilePath(out string scenarioFilePath)
         {

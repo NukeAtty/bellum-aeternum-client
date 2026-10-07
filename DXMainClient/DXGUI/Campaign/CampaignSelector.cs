@@ -54,9 +54,9 @@ namespace DTAClient.DXGUI.Campaign
 
         private XNAPanel pnlMissionPreview;
         private bool pnlMissionPreviewBackgroundTextureNeedsDispose = false;
-        private string missionPreviewFolder => SafePath.CombineDirectoryPath(ProgramConstants.GetBaseResourcePath(), "Mission Previews");
+        private string missionPreviewFolder => SafePath.CombineDirectoryPath(ProgramConstants.GetResourcePath(), "Campaign/Preview");
         private string defaultMissionPreviewPath => SafePath.CombineFilePath(missionPreviewFolder, "Default.png");
-        private bool pnlMissionPreviewEnabled => File.Exists(defaultMissionPreviewPath);
+        private bool pnlMissionPreviewEnabled => Directory.Exists(missionPreviewFolder);
 
         private XNAListBox lbCampaignList;
         private XNAClientButton btnLaunch;
@@ -67,6 +67,15 @@ namespace DTAClient.DXGUI.Campaign
         private List<IUserSetting> userSettings = new List<IUserSetting>();
 
         private CheaterWindow cheaterWindow;
+
+        private readonly List<XNAClientToggleButton> categoryButtons = new();
+        private readonly List<string> categoryNames = new();
+        private readonly List<CampaignCategory> campaignCategories = new();
+        private string selectedCategory;
+        private string currentCategoryDefaultImage;
+        private ISet<string> selectedTags;
+        private bool disableCustomMissions = true;
+        private bool disableOfficialMissions = false;
 
         public List<CampaignCheckBox> CheckBoxes { get; } = new();
         public List<CampaignDropDown> DropDowns { get; } = new();
@@ -122,10 +131,42 @@ namespace DTAClient.DXGUI.Campaign
             gameOptionsIni = new IniFile(SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(),
                 ClientConfiguration.GAME_OPTIONS));
 
+            // Create the campaign category tabs from the [CampaignCategories] section
+            // of CampaignSelector.ini. Each category defines its tab images.
+            List<CampaignCategory> categories = ReadCampaignCategories();
+            campaignCategories.AddRange(categories);
+
+            int sideSelectorBottom = 12;
+            for (int tabIndex = 0; tabIndex < categories.Count; tabIndex++)
+            {
+                CampaignCategory category = categories[tabIndex];
+
+                var btnCategory = new XNAClientToggleButton(WindowManager);
+                btnCategory.Name = $"btnCategory{tabIndex}";
+                btnCategory.UncheckedTexture = AssetLoader.LoadTexture(category.IdleTexture);
+                btnCategory.CheckedTexture = AssetLoader.LoadTexture(category.CheckedTexture);
+                btnCategory.ClientRectangle = new Rectangle(
+                    12 + tabIndex * (btnCategory.UncheckedTexture.Width + 12), 12,
+                    btnCategory.UncheckedTexture.Width, btnCategory.UncheckedTexture.Height);
+                btnCategory.LeftClick += (s, e) => SelectCategory(category.Name);
+                AddChild(btnCategory);
+                categoryButtons.Add(btnCategory);
+                categoryNames.Add(category.Name);
+
+                sideSelectorBottom = Math.Max(sideSelectorBottom, btnCategory.Bottom);
+            }
+
+            if (categoryButtons.Count > 0)
+            {
+                selectedCategory = categoryNames[0];
+                currentCategoryDefaultImage = campaignCategories[0].DefaultImage;
+                categoryButtons[0].Checked = true;
+            }
+
             var lblSelectCampaign = new XNALabel(WindowManager);
             lblSelectCampaign.Name = nameof(lblSelectCampaign);
             lblSelectCampaign.FontIndex = 1;
-            lblSelectCampaign.ClientRectangle = new Rectangle(12, 12, 0, 0);
+            lblSelectCampaign.ClientRectangle = new Rectangle(12, sideSelectorBottom + 12, 0, 0);
             lblSelectCampaign.Text = "MISSIONS:".L10N("Client:Main:Missions");
 
             lbCampaignList = new XNAListBox(WindowManager);
@@ -273,6 +314,10 @@ namespace DTAClient.DXGUI.Campaign
             userSettings.AddRange(Children.OfType<IUserSetting>());
 
             ReadMissionList();
+
+            // Re-create the default preview now that the INI-driven preview
+            // panel size has been applied.
+            UpdateMissionPreview(string.Empty);
 
             cheaterWindow = new CheaterWindow(WindowManager);
             var dp = new DarkeningPanel(WindowManager);
@@ -778,6 +823,88 @@ namespace DTAClient.DXGUI.Campaign
         /// <param name="loadCustomMissions">True means show official missions. False means show custom missions.</param>
         public void LoadMissionsWithFilter(ISet<string> selectedTags, bool disableCustomMissions = true, bool disableOfficialMissions = false)
         {
+            this.selectedTags = selectedTags;
+            this.disableCustomMissions = disableCustomMissions;
+            this.disableOfficialMissions = disableOfficialMissions;
+            ReloadMissionList();
+        }
+
+        public void SelectCategory(string categoryName)
+        {
+            selectedCategory = categoryName;
+            currentCategoryDefaultImage = campaignCategories.Find(c => c.Name == categoryName)?.DefaultImage;
+
+            for (int i = 0; i < categoryButtons.Count; i++)
+                categoryButtons[i].Checked = categoryNames[i] == categoryName;
+
+            ReloadMissionList();
+
+            // ReloadMissionList resets the list selection, which only triggers the
+            // selection-changed handler if a mission was previously selected. Show the
+            // category's default preview image explicitly so it also updates when
+            // switching tabs with nothing selected.
+            UpdateMissionPreview(string.Empty);
+        }
+
+        private static List<CampaignCategory> ReadCampaignCategories()
+        {
+            var categories = new List<CampaignCategory>();
+
+            string iniPath = SafePath.CombineFilePath(ProgramConstants.GetResourcePath(), "CampaignSelector.ini");
+            if (!File.Exists(iniPath))
+                iniPath = SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), "CampaignSelector.ini");
+            if (!File.Exists(iniPath))
+                return categories;
+
+            var ini = new CCIniFile(iniPath);
+            var section = ini.GetSection("CampaignCategories");
+            if (section == null)
+                return categories;
+
+            foreach (var kvp in section.Keys)
+            {
+                string categoryName = kvp.Value;
+                if (string.IsNullOrWhiteSpace(categoryName))
+                    continue;
+
+                var categorySection = ini.GetSection(categoryName);
+                if (categorySection == null)
+                    continue;
+
+                string idleTexture = categorySection.GetStringValue("IdleTexture", string.Empty);
+                string checkedTexture = categorySection.GetStringValue("CheckedTexture", string.Empty);
+                if (string.IsNullOrEmpty(checkedTexture))
+                    checkedTexture = idleTexture;
+
+                if (string.IsNullOrEmpty(idleTexture))
+                    continue;
+
+                string defaultImage = categorySection.GetStringValue("DefaultImage", string.Empty);
+
+                categories.Add(new CampaignCategory(categoryName, idleTexture, checkedTexture, defaultImage));
+            }
+
+            return categories;
+        }
+
+        private sealed class CampaignCategory
+        {
+            public CampaignCategory(string name, string idleTexture, string checkedTexture, string defaultImage)
+            {
+                Name = name;
+                IdleTexture = idleTexture;
+                CheckedTexture = checkedTexture;
+                DefaultImage = defaultImage;
+            }
+
+            public string Name { get; }
+            public string IdleTexture { get; }
+            public string CheckedTexture { get; }
+            public string DefaultImage { get; }
+        }
+
+        private void ReloadMissionList()
+        {
             selectedMissions.Clear();
 
             lbCampaignList.IsChangingSize = true;
@@ -810,6 +937,10 @@ namespace DTAClient.DXGUI.Campaign
 
             if (selectedTags != null)
                 missions = missions.Where(mission => mission.Tags.Intersect(selectedTags).Any()).ToList();
+
+            if (selectedCategory != null)
+                missions = missions.Where(mission => mission.Category == selectedCategory).ToList();
+
             selectedMissions = missions.ToList();
 
             // Update lbCampaignList with selected missions
@@ -940,8 +1071,12 @@ namespace DTAClient.DXGUI.Campaign
 
             if (string.IsNullOrEmpty(missionPreviewFileName) || !File.Exists(previewFilePath))
             {
+                string defaultPreviewPath = defaultMissionPreviewPath;
+                if (!string.IsNullOrEmpty(currentCategoryDefaultImage))
+                    defaultPreviewPath = SafePath.CombineFilePath(missionPreviewFolder, currentCategoryDefaultImage);
+
                 pnlMissionPreview.BackgroundTexture = CreateLetterboxedTexture(
-                    AssetLoader.LoadTextureUncached(defaultMissionPreviewPath), pnlMissionPreview.Width, pnlMissionPreview.Height);
+                    AssetLoader.LoadTextureUncached(defaultPreviewPath), pnlMissionPreview.Width, pnlMissionPreview.Height);
             }
             else
             {
