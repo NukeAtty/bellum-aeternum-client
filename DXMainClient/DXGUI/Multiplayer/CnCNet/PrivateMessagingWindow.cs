@@ -136,10 +136,10 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             tabControl.ClientRectangle = new Rectangle(34, 50, 0, 0);
             tabControl.ClickSound = new EnhancedSoundEffect("Audio/SE/button.wav");
             tabControl.FontIndex = 1;
-            tabControl.AddTab("Messages".L10N("Client:Main:MessagesTab"), UIDesignConstants.BUTTON_WIDTH_133);
-            tabControl.AddTab("Friend List".L10N("Client:Main:FriendListTab"), UIDesignConstants.BUTTON_WIDTH_133);
-            tabControl.AddTab("All Players".L10N("Client:Main:AllPlayersTab"), UIDesignConstants.BUTTON_WIDTH_133);
-            tabControl.AddTab("Recent Players".L10N("Client:Main:RecentPlayersTab"), UIDesignConstants.BUTTON_WIDTH_133);
+            tabControl.AddTab("Messages".L10N("Client:Main:MessagesTab"), UIDesignConstants.BUTTON_WIDTH_133, "133pxbtn", "133pxbtn_c");
+            tabControl.AddTab("Friend List".L10N("Client:Main:FriendListTab"), UIDesignConstants.BUTTON_WIDTH_133, "133pxbtn", "133pxbtn_c");
+            tabControl.AddTab("All Players".L10N("Client:Main:AllPlayersTab"), UIDesignConstants.BUTTON_WIDTH_133, "133pxbtn", "133pxbtn_c");
+            tabControl.AddTab("Recent Players".L10N("Client:Main:RecentPlayersTab"), UIDesignConstants.BUTTON_WIDTH_133, "133pxbtn", "133pxbtn_c");
             tabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
 
             lblPlayers = new XNALabel(WindowManager);

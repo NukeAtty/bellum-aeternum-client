@@ -335,6 +335,10 @@ namespace DTAClient.DXGUI.Campaign
             // panel size has been applied.
             UpdateMissionPreview(string.Empty);
 
+            // Select the first mission so its title/location and preview are
+            // populated right away when the campaign selector is opened.
+            SelectFirstMission();
+
             cheaterWindow = new CheaterWindow(WindowManager);
             var dp = new DarkeningPanel(WindowManager);
             dp.AddChild(cheaterWindow);
@@ -867,6 +871,14 @@ namespace DTAClient.DXGUI.Campaign
             UpdateMissionPreview(string.Empty);
 
             // Skip separators and select the first actual mission of the category.
+            SelectFirstMission();
+        }
+
+        /// <summary>
+        /// Selects the first mission of the current category, skipping separators.
+        /// </summary>
+        private void SelectFirstMission()
+        {
             int firstSelectableIndex = selectedMissions.FindIndex(m => !m.IsSeparator);
             if (firstSelectableIndex >= 0)
                 lbCampaignList.SelectedIndex = firstSelectableIndex;
