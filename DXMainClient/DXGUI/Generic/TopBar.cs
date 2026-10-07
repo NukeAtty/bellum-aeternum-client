@@ -82,6 +82,27 @@ namespace DTAClient.DXGUI.Generic
 
         public EventHandler LogoutEvent;
 
+        private bool hidden = false;
+
+        /// <summary>
+        /// Whether the top bar is permanently hidden. When enabled, the bar
+        /// will not slide down on cursor movement or connection events.
+        /// </summary>
+        public bool Hidden
+        {
+            get => hidden;
+            set
+            {
+                hidden = value;
+
+                if (hidden)
+                {
+                    isDown = false;
+                    downTime = TimeSpan.Zero;
+                }
+            }
+        }
+
         public void AddPrimarySwitchable(ISwitchable switchable)
         {
             primarySwitches.Add(switchable);
@@ -283,6 +304,10 @@ namespace DTAClient.DXGUI.Generic
         {
             lblConnectionStatus.Text = text;
             lblConnectionStatus.CenterOnParent();
+
+            if (hidden)
+                return;
+
             isDown = true;
             downTime = TimeSpan.FromSeconds(DOWN_TIME_WAIT_SECONDS - EVENT_DOWN_TIME_WAIT_SECONDS);
         }
@@ -375,6 +400,9 @@ namespace DTAClient.DXGUI.Generic
 
         void BringDown()
         {
+            if (hidden)
+                return;
+
             isDown = true;
             downTime = TimeSpan.Zero;
         }

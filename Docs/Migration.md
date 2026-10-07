@@ -11,7 +11,7 @@ This document lists all the breaking changes and how to address them. Each secti
 
 - **`MPMapsPath` is now resolved relative to the game directory.** Previously the map loader resolved `MPMapsPath` against the game directory while game-mode initialization resolved it against the `Resources` directory, which duplicated the `Resources` prefix for configurations whose `MPMapsPath` already included it. It is now resolved consistently against the game directory, matching the map loader.
 
-- **Game modes can now define a `Description`.** Add `Description=` to a game mode's section in `MPMaps.ini` to show a description in the game lobby (with an optional background bar). Use `@` for line breaks. The text is localized via the `INI:GameModes:<Name>:Description` translation key. The label and background bar are defined as `lblGameModeDescription` and `lblGameModeDescriptionBG` in `GameLobbyBase.ini`.
+- **Game modes can now define a `Description`.** Add `Description=` to a game mode's section in `MPMaps.ini` to show a description as a tooltip when hovering over the game-mode filter in the game lobby. Use `@` for line breaks. The text is localized via the `INI:GameModes:<Name>:Description` translation key.
 
 - **Game modes with `MultiplayerOnly=yes` are hidden from the Skirmish lobby.** They no longer appear in the Skirmish lobby's game-mode filter. LAN and CnCNet lobbies are unaffected.
 

@@ -185,7 +185,10 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             tbMessageInput.Enabled = false;
 
             mclbRecentPlayerList = new RecentPlayerTable(WindowManager, connectionManager);
+            mclbRecentPlayerList.Name = nameof(mclbRecentPlayerList);
             mclbRecentPlayerList.ClientRectangle = new Rectangle(lbUserList.X, lbUserList.Y, lbMessages.Right - lbUserList.X, lbUserList.Height);
+            mclbRecentPlayerList.BackgroundTexture = AssetLoader.CreateTexture(new Color(0, 0, 0, 128), 1, 1);
+            mclbRecentPlayerList.PanelBackgroundDrawMode = PanelBackgroundImageDrawMode.STRETCHED;
             mclbRecentPlayerList.PlayerRightClick += RecentPlayersList_RightClick;
             mclbRecentPlayerList.Disable();
 
@@ -208,6 +211,18 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             WindowManager.AddAndInitializeControl(notificationBox);
 
             base.Initialize();
+
+            // If the INI file did not position the Recent Players table, match it
+            // to the content area shared by the other tabs (the user list /
+            // messages boxes). This must be done after base.Initialize() so it
+            // follows the INI-defined layout instead of the hard-coded defaults.
+            if (!mclbRecentPlayerList.RectangleSetFromINI)
+            {
+                mclbRecentPlayerList.ClientRectangle = new Rectangle(
+                    lbUserList.X, lbUserList.Y,
+                    lbMessages.Right - lbUserList.X,
+                    lbMessages.Bottom - lbUserList.Y);
+            }
 
             CenterOnParent();
 

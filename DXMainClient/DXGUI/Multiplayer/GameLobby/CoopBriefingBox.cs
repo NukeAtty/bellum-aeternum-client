@@ -66,7 +66,14 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         public void SetText(string text)
         {
-            this.text = Renderer.FixText(text, FontIndex, Width - (MARGIN * 2)).Text;
+            // Word-wrap the briefing to the box width. Handles the "@" newline
+            // token and existing newlines, and splits words that are too long.
+            var lines = Renderer.GetFixedTextLines(
+                text.Replace("@", "\n"), FontIndex, Width - (MARGIN * 2),
+                splitWords: true, keepBlankLines: true);
+
+            this.text = string.Join("\n", lines);
+
             int textHeight = (int)Renderer.GetTextDimensions(this.text, FontIndex).Y;
             ClientRectangle = new Rectangle(X, 0,
                 Width, textHeight + MARGIN * 2);

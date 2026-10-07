@@ -444,16 +444,6 @@ namespace DTAClient.DXGUI
 
                 double ratio = xRatio > yRatio ? yRatio : xRatio;
 
-                // Special rule for 1360x768 and 1366x768                
-                if ((windowWidth == 1366 || windowWidth == 1360) && windowHeight == 768)
-                {
-                    // Most client interface has been designed for 1280x720 or 1280x800.
-                    // 1280x720 upscaled to 1366x768 doesn't look great, so we allow players with 1366x768 to use their native resolution with small black bars on the sides
-                    // This behavior is enforced even if IntegerScaledClient is turned off.
-                    renderResolutionX = windowWidth;
-                    renderResolutionY = windowHeight;
-                }
-
                 // Special rule: if 1280x720 is a valid render resolution, we allow 1.5x scaling for 1920x1080.
                 if (windowWidth == 1920 && windowHeight == 1080
                     && 1280 >= clientConfiguration.MinimumRenderWidth && 1280 <= clientConfiguration.MaximumRenderWidth

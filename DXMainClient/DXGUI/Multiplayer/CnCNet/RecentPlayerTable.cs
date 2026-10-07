@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using DTAClient.Online;
+using Rampastring.Tools;
 using Rampastring.XNAUI;
 using Rampastring.XNAUI.XNAControls;
 using ClientCore.Extensions;
@@ -18,6 +19,13 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             this.connectionManager = connectionManager;
         }
 
+        /// <summary>
+        /// Whether the table's rectangle was defined in the INI file.
+        /// When true, the owning window should not override it with its
+        /// default (derived) layout.
+        /// </summary>
+        public bool RectangleSetFromINI { get; private set; }
+
         public override void Initialize()
         {
             AllowRightClickUnselect = false;
@@ -27,6 +35,27 @@ namespace DTAClient.DXGUI.Multiplayer.CnCNet
             AddColumn("Player".L10N("Client:Main:RecentPlayerPlayer"));
             AddColumn("Game".L10N("Client:Main:RecentPlayerGame"));
             AddColumn("Date/Time".L10N("Client:Main:RecentPlayerDateTime"));
+        }
+
+        protected override void ParseControlINIAttribute(IniFile iniFile, string key, string value)
+        {
+            switch (key)
+            {
+                case "Location":
+                case "Size":
+                case "X":
+                case "Y":
+                case "Width":
+                case "Height":
+                case "DistanceFromRightBorder":
+                case "DistanceFromBottomBorder":
+                case "FillWidth":
+                case "FillHeight":
+                    RectangleSetFromINI = true;
+                    break;
+            }
+
+            base.ParseControlINIAttribute(iniFile, key, value);
         }
 
         public void AddRecentPlayer(RecentPlayer recentPlayer)

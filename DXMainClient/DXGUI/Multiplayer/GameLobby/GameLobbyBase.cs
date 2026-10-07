@@ -172,13 +172,10 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         protected XNALabel lblMapAuthor;
         protected XNALabel lblGameMode;
         protected XNALabel lblMapSize;
-        protected XNALabel lblGameModeDescription;
-        protected XNAPanel lblGameModeDescriptionBG;
 
         protected MapPreviewBox MapPreviewBox;
 
         protected XNAMultiColumnListBox lbGameModeMapList;
-        protected ToolTip mapListTooltip;
         protected XNAClientDropDown ddGameModeMapFilter;
         protected XNALabel lblGameModeSelect;
         protected XNAContextMenu mapContextMenu;
@@ -310,17 +307,11 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             lblMapAuthor = FindChild<XNALabel>(nameof(lblMapAuthor));
             lblGameMode = FindChild<XNALabel>(nameof(lblGameMode));
             lblMapSize = FindChild<XNALabel>(nameof(lblMapSize));
-            lblGameModeDescription = FindChild<XNALabel>(nameof(lblGameModeDescription), optional: true);
-            lblGameModeDescriptionBG = FindChild<XNAPanel>(nameof(lblGameModeDescriptionBG), optional: true);
 
             lbGameModeMapList = FindChild<XNAMultiColumnListBox>("lbMapList"); // lbMapList for backwards compatibility
             lbGameModeMapList.SelectedIndexChanged += LbGameModeMapList_SelectedIndexChanged;
             lbGameModeMapList.RightClick += LbGameModeMapList_RightClick;
             lbGameModeMapList.AllowKeyboardInput = true; //!isMultiplayer
-
-            mapListTooltip = new(WindowManager, masterControl: lbGameModeMapList);
-            mapListTooltip.FollowCursor = true;
-            lbGameModeMapList.HoveredIndexChanged += LbGameModeMapList_HoveredIndexChanged;
 
             mapContextMenu = new XNAContextMenu(WindowManager);
             mapContextMenu.Name = nameof(mapContextMenu);
@@ -329,17 +320,6 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             mapContextMenu.AddItem("Favorite".L10N("Client:Main:Favorite"),
                 selectAction: ToggleFavoriteMap);
             toggleFavoriteItem = mapContextMenu.Items.First();
-
-            mapContextMenu.AddItem("Copy Map Name".L10N("Client:Main:CopyMapName"),
-                selectAction: CopyMapNameToClipboard);
-            mapContextMenu.AddItem("Copy Original Name".L10N("Client:Main:CopyOriginalMapName"),
-                selectAction: CopyOriginalMapNameToClipboard,
-                visibilityChecker: () => Map?.UntranslatedName != Map?.Name);
-            mapContextMenu.AddItem("Delete Map".L10N("Client:Main:DeleteMap"),
-                selectAction: DeleteMapConfirmation,
-                visibilityChecker: CanDeleteMap);
-            mapContextMenu.AddItem("Show in Folder".L10N("Client:Main:ShowInFolder"),
-                selectAction: ShowInFolder);
 
             AddChild(mapContextMenu);
 
@@ -988,22 +968,6 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         private void LbGameModeMapList_SelectedIndexChanged(object sender, EventArgs e)
             => LbGameModeMapList_SelectedIndexChanged();
-
-        private void LbGameModeMapList_HoveredIndexChanged(object sender, EventArgs e)
-        {
-            if (lbGameModeMapList.HoveredIndex < 0 || lbGameModeMapList.HoveredIndex >= lbGameModeMapList.ItemCount)
-            {
-                mapListTooltip.Text = string.Empty;
-                return;
-            }
-
-            var gmm = (GameModeMap)lbGameModeMapList.GetItem(1, lbGameModeMapList.HoveredIndex).Tag;
-
-            if (gmm.Map.UntranslatedName != gmm.Map.Name)
-                mapListTooltip.Text = "Original name:".L10N("Client:Main:OriginalMapName") + " " + gmm.Map.UntranslatedName;
-            else
-                mapListTooltip.Text = string.Empty;
-        }
 
         private void PickRandomMap()
         {
@@ -2609,11 +2573,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 lblGameMode.Text = "Game mode: Unknown".L10N("Client:Main:GameModeUnknown");
                 lblMapSize.Text = "Size: Not available".L10N("Client:Main:MapSizeUnknown");
 
-                if (lblGameModeDescription != null)
-                    lblGameModeDescription.Visible = false;
-
-                if (lblGameModeDescriptionBG != null)
-                    lblGameModeDescriptionBG.Visible = false;
+                ddGameModeMapFilter.ToolTipText = string.Empty;
 
                 return;
             }
@@ -2623,17 +2583,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             lblGameMode.Text = "Game mode:".L10N("Client:Main:GameModeLabel") + " " + GameMode.UIName;
             lblMapSize.Text = "Size:".L10N("Client:Main:MapSize") + " " + Map.GetSizeString();
 
-            if (lblGameModeDescription != null)
-            {
-                bool showDescription = !string.IsNullOrEmpty(GameMode.Description);
-
-                lblGameModeDescription.Visible = showDescription;
-                if (lblGameModeDescriptionBG != null)
-                    lblGameModeDescriptionBG.Visible = showDescription;
-
-                if (showDescription)
-                    lblGameModeDescription.Text = GameMode.Description.Replace("@", Environment.NewLine);
-            }
+            ddGameModeMapFilter.ToolTipText = string.IsNullOrEmpty(GameMode.Description)
+                ? string.Empty
+                : GameMode.Description.Replace("@", Environment.NewLine);
         }
 
         /// <summary>

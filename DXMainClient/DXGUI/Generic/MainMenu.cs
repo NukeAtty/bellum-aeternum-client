@@ -160,7 +160,7 @@ namespace DTAClient.DXGUI.Generic
         private XNAClientButton btnOptions;
         private XNAClientButton btnMapEditor;
         private XNAClientButton btnStatistics;
-        private XNAClientButton btnCredits;
+        private XNAClientButton btnPrivateMessages;
         private XNAClientButton btnExtras;
 
         /// <summary>
@@ -233,12 +233,12 @@ namespace DTAClient.DXGUI.Generic
             btnStatistics.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
             btnStatistics.LeftClick += BtnStatistics_LeftClick;
 
-            btnCredits = new XNAClientButton(WindowManager);
-            btnCredits.Name = nameof(btnCredits);
-            btnCredits.IdleTexture = AssetLoader.LoadTexture("MainMenu/credits.png");
-            btnCredits.HoverTexture = AssetLoader.LoadTexture("MainMenu/credits_c.png");
-            btnCredits.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
-            btnCredits.LeftClick += BtnCredits_LeftClick;
+            btnPrivateMessages = new XNAClientButton(WindowManager);
+            btnPrivateMessages.Name = nameof(btnPrivateMessages);
+            btnPrivateMessages.IdleTexture = AssetLoader.LoadTexture("MainMenu/privatemessages.png");
+            btnPrivateMessages.HoverTexture = AssetLoader.LoadTexture("MainMenu/privatemessages_c.png");
+            btnPrivateMessages.HoverSoundEffect = new EnhancedSoundEffect("Audio/SE/MainMenu/button.wav");
+            btnPrivateMessages.LeftClick += BtnPrivateMessages_LeftClick;
 
             btnExtras = new XNAClientButton(WindowManager);
             btnExtras.Name = nameof(btnExtras);
@@ -280,7 +280,7 @@ namespace DTAClient.DXGUI.Generic
             AddChild(btnOptions);
             AddChild(btnMapEditor);
             AddChild(btnStatistics);
-            AddChild(btnCredits);
+            AddChild(btnPrivateMessages);
             AddChild(btnExtras);
             AddChild(btnExit);
             AddChild(lblCnCNetStatus);
@@ -350,7 +350,7 @@ namespace DTAClient.DXGUI.Generic
                 btnOptions.HotKey = Keys.O;
                 btnMapEditor.HotKey = Keys.E;
                 btnStatistics.HotKey = Keys.T;
-                btnCredits.HotKey = Keys.R;
+                btnPrivateMessages.HotKey = Keys.P;
                 btnExtras.HotKey = Keys.X;
             }
             else
@@ -363,7 +363,7 @@ namespace DTAClient.DXGUI.Generic
                 btnOptions.HotKey = Keys.None;
                 btnMapEditor.HotKey = Keys.None;
                 btnStatistics.HotKey = Keys.None;
-                btnCredits.HotKey = Keys.None;
+                btnPrivateMessages.HotKey = Keys.None;
                 btnExtras.HotKey = Keys.None;
             }
         }
@@ -655,6 +655,7 @@ namespace DTAClient.DXGUI.Generic
                 control.Disable();
 
             WindowManager.AddAndInitializeControl(topBar);
+            topBar.Hidden = true;
             topBar.AddPrimarySwitchable(this);
 
             RevertSwitchMainMenuMusicFormat();
@@ -986,10 +987,8 @@ namespace DTAClient.DXGUI.Generic
         private void BtnStatistics_LeftClick(object sender, EventArgs e) =>
             statisticsWindow.Enable();
 
-        private void BtnCredits_LeftClick(object sender, EventArgs e)
-        {
-            ProcessLauncher.StartShellProcess(ClientConfiguration.Instance.CreditsURL);
-        }
+        private void BtnPrivateMessages_LeftClick(object sender, EventArgs e) =>
+            privateMessagingWindow.SwitchOn();
 
         private void BtnExtras_LeftClick(object sender, EventArgs e) =>
             extrasWindow.Enable();

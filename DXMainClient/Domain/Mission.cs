@@ -49,6 +49,11 @@ namespace DTAClient.Domain
             CustomMissionID = ComputeCustomMissionID(missionCodeName);
             PreviewImage = missionSection.GetStringValue("PreviewImage", string.Empty);
             Category = missionSection.GetStringValue(nameof(Category), string.Empty);
+            Title = missionSection.GetStringValue(nameof(Title), string.Empty)
+                .L10N($"INI:Missions:{missionCodeName}:Title");
+            Location = missionSection.GetStringValue(nameof(Location), string.Empty)
+                .L10N($"INI:Missions:{missionCodeName}:Location");
+            IsSeparator = missionSection.GetBooleanValue(nameof(IsSeparator), false);
         }
 
         public static Mission NewCustomMission(IniSection clientMissionConfigSection, string missionCodeName, string scenario, IniSection? gameMissionConfigSection)
@@ -113,6 +118,23 @@ namespace DTAClient.Domain
         /// Used to filter missions by the campaign category selector.
         /// </summary>
         public string Category { get; private set; }
+
+        /// <summary>
+        /// The mission title shown in the campaign selector ("Title" key in Battle(E).ini).
+        /// </summary>
+        public string Title { get; private set; }
+
+        /// <summary>
+        /// The mission location shown in the campaign selector ("Location" key in Battle(E).ini).
+        /// </summary>
+        public string Location { get; private set; }
+
+        /// <summary>
+        /// Whether this entry is a separator ("IsSeparator" key in Battle(E).ini).
+        /// Separators are shown as non-selectable list headers; when a category tab is
+        /// selected, the selector skips them and selects the first actual mission.
+        /// </summary>
+        public bool IsSeparator { get; private set; }
 
         public bool TryGetScenarioFilePath(out string scenarioFilePath)
         {

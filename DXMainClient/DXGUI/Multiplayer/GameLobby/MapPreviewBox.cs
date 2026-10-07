@@ -186,7 +186,11 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         {
             EnableStartLocationSelection = true;
 
-            BackgroundTexture = AssetLoader.CreateTexture(new Color(0, 0, 0, 128), 1, 1);
+            // Only apply the default background if the INI file did not set one.
+            // (The INI is read before Initialize() runs, so this preserves any
+            // BackgroundTexture / SolidColorBackgroundTexture set there.)
+            if (BackgroundTexture == null)
+                BackgroundTexture = AssetLoader.CreateTexture(new Color(0, 0, 0, 128), 1, 1);
 
             mainContextMenu = new XNAContextMenu(WindowManager);
             mainContextMenu.Name = nameof(mainContextMenu);

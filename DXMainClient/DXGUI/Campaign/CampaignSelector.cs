@@ -63,6 +63,8 @@ namespace DTAClient.DXGUI.Campaign
         private XNAClientButton btnCancel;
         private XNAClientButton btnReturn;
         private XNATextBlock tbMissionDescription;
+        private XNALabel lblMissionTitle;
+        private XNALabel lblMissionLocation;
         private XNATrackbar trbDifficultySelector;
         private List<IUserSetting> userSettings = new List<IUserSetting>();
 
@@ -185,6 +187,18 @@ namespace DTAClient.DXGUI.Campaign
                 lblSelectCampaign.Y, 0, 0);
             lblMissionDescriptionHeader.Text = "MISSION DESCRIPTION:".L10N("Client:Main:MissionDescription");
 
+            lblMissionTitle = new XNALabel(WindowManager);
+            lblMissionTitle.Name = nameof(lblMissionTitle);
+            lblMissionTitle.FontIndex = 1;
+            lblMissionTitle.ClientRectangle = new Rectangle(600, 72, 0, 0);
+            lblMissionTitle.Text = string.Empty;
+
+            lblMissionLocation = new XNALabel(WindowManager);
+            lblMissionLocation.Name = nameof(lblMissionLocation);
+            lblMissionLocation.FontIndex = 1;
+            lblMissionLocation.ClientRectangle = new Rectangle(600, 108, 0, 0);
+            lblMissionLocation.Text = string.Empty;
+
             tbMissionDescription = new XNATextBlock(WindowManager);
             tbMissionDescription.Name = nameof(tbMissionDescription);
             tbMissionDescription.ClientRectangle = new Rectangle(
@@ -278,6 +292,8 @@ namespace DTAClient.DXGUI.Campaign
 
             AddChild(lblSelectCampaign);
             AddChild(lblMissionDescriptionHeader);
+            AddChild(lblMissionTitle);
+            AddChild(lblMissionLocation);
             AddChild(lbCampaignList);
             AddChild(tbMissionDescription);
             AddChild(lblDifficultyLevel);
@@ -336,6 +352,8 @@ namespace DTAClient.DXGUI.Campaign
             if (lbCampaignList.SelectedIndex == -1)
             {
                 tbMissionDescription.Text = string.Empty;
+                lblMissionTitle.Text = string.Empty;
+                lblMissionLocation.Text = string.Empty;
 
                 UpdateMissionPreview(string.Empty);
 
@@ -344,6 +362,9 @@ namespace DTAClient.DXGUI.Campaign
             }
 
             Mission mission = selectedMissions[lbCampaignList.SelectedIndex];
+
+            lblMissionTitle.Text = mission.Title;
+            lblMissionLocation.Text = mission.Location;
 
             UpdateMissionPreview(mission.PreviewImage);
 
@@ -844,6 +865,11 @@ namespace DTAClient.DXGUI.Campaign
             // category's default preview image explicitly so it also updates when
             // switching tabs with nothing selected.
             UpdateMissionPreview(string.Empty);
+
+            // Skip separators and select the first actual mission of the category.
+            int firstSelectableIndex = selectedMissions.FindIndex(m => !m.IsSeparator);
+            if (firstSelectableIndex >= 0)
+                lbCampaignList.SelectedIndex = firstSelectableIndex;
         }
 
         private static List<CampaignCategory> ReadCampaignCategories()
@@ -952,7 +978,7 @@ namespace DTAClient.DXGUI.Campaign
                 {
                     item.TextColor = UISettings.ActiveSettings.DisabledItemColor;
                 }
-                else if (string.IsNullOrEmpty(mission.Scenario))
+                else if (mission.IsSeparator || string.IsNullOrEmpty(mission.Scenario))
                 {
                     item.TextColor = AssetLoader.GetColorFromString(
                         ClientConfiguration.Instance.ListBoxHeaderColor);
