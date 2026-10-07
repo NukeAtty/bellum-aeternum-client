@@ -81,6 +81,8 @@ namespace ClientGUI
             SafePath.DeleteFileIfExists(ProgramConstants.GamePath, "TI.LOG");
             SafePath.DeleteFileIfExists(ProgramConstants.GamePath, "TS.LOG");
 
+            SetCampaignDefaultGameSpeed();
+
             GameProcessStarting?.Invoke();
 
             if (UserINISettings.Instance.WindowedMode && UseQres && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -161,6 +163,18 @@ namespace ClientGUI
             GameProcessStarted?.Invoke();
 
             Logger.Log("Waiting for qres.dat or " + gameExecutableName + " to exit.");
+        }
+
+        /// <summary>
+        /// Writes the hard-coded CampaignDefaultGameSpeed=5 into the [Phobos]
+        /// section of the game's INI (ra2md.ini). It only affects campaign games,
+        /// so it is safe to write on every game launch.
+        /// </summary>
+        private static void SetCampaignDefaultGameSpeed()
+        {
+            IniFile gameIni = new IniFile(SafePath.CombineFilePath(ProgramConstants.GamePath, "ra2md.ini"));
+            gameIni.SetStringValue("Phobos", "CampaignDefaultGameSpeed", "5");
+            gameIni.WriteIniFile();
         }
 
         static void Process_Exited(object sender, EventArgs e)
