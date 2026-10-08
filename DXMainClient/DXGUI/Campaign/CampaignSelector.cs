@@ -56,7 +56,7 @@ namespace DTAClient.DXGUI.Campaign
         private bool pnlMissionPreviewBackgroundTextureNeedsDispose = false;
         private string missionPreviewFolder => SafePath.CombineDirectoryPath(ProgramConstants.GetResourcePath(), "Campaign/Preview");
         private string defaultMissionPreviewPath => SafePath.CombineFilePath(missionPreviewFolder, "Default.png");
-        private bool pnlMissionPreviewEnabled => Directory.Exists(missionPreviewFolder);
+        private bool pnlMissionPreviewEnabled => AssetLoader.AssetDirectoryExists("Campaign/Preview");
 
         private XNAListBox lbCampaignList;
         private XNAClientButton btnLaunch;
@@ -1121,7 +1121,7 @@ namespace DTAClient.DXGUI.Campaign
             if (!string.IsNullOrEmpty(missionPreviewFileName))
                 previewFilePath = SafePath.CombineFilePath(missionPreviewFolder, missionPreviewFileName);
 
-            if (string.IsNullOrEmpty(missionPreviewFileName) || !File.Exists(previewFilePath))
+            if (string.IsNullOrEmpty(missionPreviewFileName) || !AssetLoader.AssetExists(previewFilePath))
             {
                 string defaultPreviewPath = defaultMissionPreviewPath;
                 if (!string.IsNullOrEmpty(currentCategoryDefaultImage))

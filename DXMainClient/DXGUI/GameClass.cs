@@ -96,6 +96,8 @@ namespace DTAClient.DXGUI
             AssetLoader.AssetSearchPaths.Add(ProgramConstants.GetBaseResourcePath());
             AssetLoader.AssetSearchPaths.Add(ProgramConstants.GamePath);
 
+            ClientAssetPak.Register();
+
 #if DX || (GL && WINFORMS)
             // Try to create and load a texture to check for MonoGame compatibility
 #if DX

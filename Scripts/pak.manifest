@@ -1,0 +1,14 @@
+# Assets to pack into the encrypted client asset archive (clientassets.pak).
+#
+# Each non-empty, non-comment line is a path or wildcard relative to the
+# Resources directory. Wildcards are matched recursively.
+#
+# Examples:
+#   *.png
+#   MainMenu/*.png
+#   Icons/Sides/*.png
+#   Audio/SE/*.wav
+#
+# By default every PNG under Resources is packed. Comment this out and list
+# individual paths if only a subset of images should be archived.
+*.png
