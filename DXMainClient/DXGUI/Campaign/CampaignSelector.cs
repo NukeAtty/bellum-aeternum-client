@@ -1006,6 +1006,20 @@ namespace DTAClient.DXGUI.Campaign
                     item.Texture = AssetLoader.LoadTexture("Icons/Sides/" + mission.IconPath + "icon.png");
 
                 lbCampaignList.AddItem(item);
+
+                if (mission.IsSeparator)
+                {
+                    // Give separator entries an extra blank line above and below by
+                    // prepending/appending an empty line to the item's parsed lines.
+                    // Toggling Visible forces the list box to re-count its total line
+                    // count after we modify TextLines directly.
+                    item.Visible = false;
+                    item.TextLines = new List<string> { string.Empty }
+                        .Concat(item.TextLines)
+                        .Append(string.Empty)
+                        .ToList();
+                    item.Visible = true;
+                }
             }
 
             lbCampaignList.IsChangingSize = false;
