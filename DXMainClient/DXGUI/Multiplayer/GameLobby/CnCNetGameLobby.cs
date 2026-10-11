@@ -1408,6 +1408,20 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             if (team < 0 || team > 4)
                 return;
 
+            // The map only has room for a limited number of combatants. Players
+            // beyond that limit can only be spectators.
+            if (side < SideCount + RandomSelectorCount && !CanBecomeCombatant(pInfo))
+            {
+                side = GetSpectatorSideIndex();
+            }
+
+            // Spectators cannot have a starting location or a team.
+            if (side >= SideCount + RandomSelectorCount)
+            {
+                start = 0;
+                team = 0;
+            }
+
             if (side != pInfo.SideId
                 || start != pInfo.StartingLocation
                 || team != pInfo.TeamId)

@@ -318,6 +318,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             while (Players.Count + AIPlayers.Count > MAX_PLAYER_COUNT && AIPlayers.Count > 0)
                 AIPlayers.RemoveAt(AIPlayers.Count - 1);
 
+            if (IsHost)
+                EnforceMapCapacity();
+
             if (IsHost && Players.Count == 1)
                 Players[0].Ready = true;
 
@@ -969,6 +972,20 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             if (team < 0 || team > 4)
                 return;
+
+            // The map only has room for a limited number of combatants. Players
+            // beyond that limit can only be spectators.
+            if (side < SideCount + RandomSelectorCount && !CanBecomeCombatant(pInfo))
+            {
+                side = GetSpectatorSideIndex();
+            }
+
+            // Spectators cannot have a starting location or a team.
+            if (side >= SideCount + RandomSelectorCount)
+            {
+                start = 0;
+                team = 0;
+            }
 
             if (side != pInfo.SideId
                 || start != pInfo.StartingLocation

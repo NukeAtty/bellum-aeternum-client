@@ -106,6 +106,9 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         private void MapPreviewBox_LocalStartingLocationSelected(object sender, LocalStartingLocationEventArgs e)
         {
+            if (IsLocalPlayerSpectator())
+                return;
+
             Players[0].StartingLocation = e.StartingLocationIndex + 1;
             CopyPlayerDataToUI();
         }
@@ -163,18 +166,16 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         /// <summary>
         /// When the selected map's maximum player count is lower than the current
-        /// number of players, removes AI players first so that the player count
-        /// matches the map's capacity.
+        /// number of combatants, removes AI players first so that the combatant
+        /// count matches the map's capacity. The local player being a spectator
+        /// does not count towards the limit.
         /// </summary>
         protected override void ChangeMap(GameModeMap gameModeMap)
         {
-            if (gameModeMap != null && gameModeMap.MaxPlayers > 0)
-            {
-                while (Players.Count + AIPlayers.Count > gameModeMap.MaxPlayers && AIPlayers.Count > 0)
-                    AIPlayers.RemoveAt(AIPlayers.Count - 1);
-            }
-
             base.ChangeMap(gameModeMap);
+
+            if (EnforceMapCapacity())
+                CopyPlayerDataToUI();
         }
 
         protected override bool HideMultiplayerOnlyGameModes => true;
@@ -514,7 +515,10 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         protected override void UpdateMapPreviewBoxEnabledStatus()
         {
-            MapPreviewBox.EnableContextMenu = GameModeMap != null && !(GameModeMap.ForceRandomStartLocations || GetPlayerExtraOptions().IsForceRandomStarts);
+            bool disablestartlocs = GameModeMap == null || GameModeMap.ForceRandomStartLocations || GetPlayerExtraOptions().IsForceRandomStarts;
+            bool localIsSpectator = IsLocalPlayerSpectator();
+
+            MapPreviewBox.EnableContextMenu = !disablestartlocs && !localIsSpectator;
             MapPreviewBox.EnableStartLocationSelection = MapPreviewBox.EnableContextMenu;
         }
 

@@ -987,6 +987,12 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             if (IsHost)
             {
                 base.CopyPlayerDataFromUI(sender, e);
+
+                // The host may have assigned a combatant side to a player even
+                // though the map has no free slot left. Re-apply the map capacity.
+                if (EnforceMapCapacity())
+                    CopyPlayerDataToUI();
+
                 BroadcastPlayerOptions();
                 return;
             }
@@ -1161,7 +1167,14 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         {
             base.ChangeMap(gameModeMap);
 
-            TrimPlayersToMapCapacity(gameModeMap);
+            // Instead of kicking players that no longer fit on the map, force the
+            // excess ones to spectator. The map's player limit only applies to
+            // combatants, spectators do not occupy a player slot.
+            if (IsHost && EnforceMapCapacity())
+            {
+                CopyPlayerDataToUI();
+                BroadcastPlayerOptions();
+            }
 
             bool resetAutoReady = gameModeMap?.GameMode == null || gameModeMap?.Map == null;
 
@@ -1174,44 +1187,6 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
             //if (IsHost)
             //    OnGameOptionChanged();
-        }
-
-        /// <summary>
-        /// Removes players so that the player count matches the selected map's
-        /// maximum player count. AI players are removed first, then excess human
-        /// players are removed from the bottom of the list upwards.
-        /// </summary>
-        private void TrimPlayersToMapCapacity(GameModeMap gameModeMap)
-        {
-            if (!IsHost || gameModeMap == null || gameModeMap.MaxPlayers <= 0)
-                return;
-
-            bool removed = false;
-
-            // Remove AI players first.
-            while (Players.Count + AIPlayers.Count > gameModeMap.MaxPlayers && AIPlayers.Count > 0)
-            {
-                AIPlayers.RemoveAt(AIPlayers.Count - 1);
-                removed = true;
-            }
-
-            // Then remove excess human players from the bottom of the list upwards.
-            int excessHumans = Players.Count + AIPlayers.Count - gameModeMap.MaxPlayers;
-            for (int i = Players.Count - 1; i >= 1 && excessHumans > 0; i--)
-            {
-                if (Players[i].Name == ProgramConstants.PLAYERNAME)
-                    continue;
-
-                KickPlayer(i);
-                excessHumans--;
-                removed = true;
-            }
-
-            if (removed)
-            {
-                CopyPlayerDataToUI();
-                BroadcastPlayerOptions();
-            }
         }
 
         protected override void ToggleFavoriteMap()
@@ -1252,16 +1227,18 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
 
         protected override void UpdateMapPreviewBoxEnabledStatus()
         {
+            bool localIsSpectator = IsLocalPlayerSpectator();
+
             if (Map != null && GameMode != null)
             {
                 bool disablestartlocs = GameModeMap.ForceRandomStartLocations || GetPlayerExtraOptions().IsForceRandomStarts;
                 MapPreviewBox.EnableContextMenu = disablestartlocs ? false : IsHost;
-                MapPreviewBox.EnableStartLocationSelection = !disablestartlocs;
+                MapPreviewBox.EnableStartLocationSelection = !disablestartlocs && !localIsSpectator;
             }
             else
             {
                 MapPreviewBox.EnableContextMenu = IsHost;
-                MapPreviewBox.EnableStartLocationSelection = true;
+                MapPreviewBox.EnableStartLocationSelection = !localIsSpectator;
             }
         }
 

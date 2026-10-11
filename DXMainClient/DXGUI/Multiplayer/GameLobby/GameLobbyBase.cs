@@ -216,14 +216,42 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
         protected virtual int MaxPlayerCount => MAX_PLAYER_COUNT;
 
         /// <summary>
-        /// The effective maximum number of players allowed for the currently
-        /// selected map. Falls back to <see cref="MAX_PLAYER_COUNT"/> when the
-        /// map does not specify a maximum player count.
+        /// The maximum number of combatants (non-spectator human players and AI
+        /// players) allowed for the currently selected map. Falls back to
+        /// <see cref="MAX_PLAYER_COUNT"/> when the map does not specify a maximum
+        /// player count. Spectators do not count towards this limit.
         /// </summary>
-        protected int EffectiveMaxPlayerCount =>
+        protected int MapMaxCombatants =>
             GameModeMap != null && GameModeMap.MaxPlayers > 0
                 ? Math.Min(GameModeMap.MaxPlayers, MAX_PLAYER_COUNT)
                 : MAX_PLAYER_COUNT;
+
+        /// <summary>
+        /// The number of combatants currently in the lobby (non-spectator human
+        /// players and AI players). Spectators are not counted.
+        /// </summary>
+        protected int CombatantCount =>
+            NonSpectatorPlayerCount + AIPlayers.Count;
+
+        /// <summary>
+        /// The number of human players in the lobby that are not spectators.
+        /// </summary>
+        protected int NonSpectatorPlayerCount => Players.Count(p => !IsPlayerSpectator(p));
+
+        /// <summary>
+        /// The effective maximum number of player slots (human players and AI
+        /// players combined) that can be filled in the UI. Because spectators do
+        /// not occupy a combatant slot, this is the current number of participants
+        /// plus however many combatant slots remain free on the selected map.
+        /// </summary>
+        protected int EffectiveMaxPlayerCount
+        {
+            get
+            {
+                int aiCapacity = Math.Max(0, MapMaxCombatants - NonSpectatorPlayerCount);
+                return Math.Min(Players.Count + aiCapacity, MAX_PLAYER_COUNT);
+            }
+        }
 
         /// <summary>
         /// Whether game modes that are multiplayer-only should be hidden from
@@ -1365,7 +1393,7 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             return ddGameModeMapFilter.Items[GetDefaultGameModeMapFilterIndex()].Tag as GameModeMapFilter;
         }
 
-        private int GetSpectatorSideIndex() => SideCount + RandomSelectorCount;
+        protected int GetSpectatorSideIndex() => SideCount + RandomSelectorCount;
 
         /// <summary>
         /// Applies disallowed side indexes to the side option drop-downs
@@ -1973,6 +2001,105 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
             return false;
         }
 
+        /// <summary>
+        /// Checks whether the local player has selected Spectator as their side.
+        /// </summary>
+        protected bool IsLocalPlayerSpectator()
+        {
+            PlayerInfo localPlayer = FindLocalPlayer();
+            return localPlayer != null && IsPlayerSpectator(localPlayer);
+        }
+
+        /// <summary>
+        /// Checks whether the given player could become a non-spectator combatant
+        /// without exceeding the selected map's maximum player count.
+        /// </summary>
+        protected bool CanBecomeCombatant(PlayerInfo pInfo)
+        {
+            if (GameModeMap == null || GameModeMap.MaxPlayers <= 0)
+                return true;
+
+            int count = CombatantCount;
+
+            // Don't count the player themselves if they're already a combatant.
+            if (!IsPlayerSpectator(pInfo))
+                count--;
+
+            return count < MapMaxCombatants;
+        }
+
+        /// <summary>
+        /// Forces the given player to spectator, clearing their starting location
+        /// and team selection.
+        /// </summary>
+        protected void ForceSpectator(PlayerInfo pInfo)
+        {
+            pInfo.SideId = GetSpectatorSideIndex();
+            pInfo.StartingLocation = 0;
+            pInfo.TeamId = 0;
+        }
+
+        /// <summary>
+        /// Ensures that the number of combatants (non-spectator human players and
+        /// AI players) does not exceed the selected map's maximum player count.
+        /// AI players are removed first; any remaining excess human players are
+        /// forced to spectator. On maps that do not allow spectators (co-op),
+        /// excess human players are kicked instead, preserving the previous behaviour.
+        /// </summary>
+        /// <returns>True if the lobby state was changed, otherwise false.</returns>
+        protected bool EnforceMapCapacity()
+        {
+            if (GameModeMap == null || GameModeMap.MaxPlayers <= 0)
+                return false;
+
+            int capacity = MapMaxCombatants;
+            bool changed = false;
+
+            // Remove AI players first so that human players get priority for the
+            // remaining combatant slots.
+            while (NonSpectatorPlayerCount + AIPlayers.Count > capacity && AIPlayers.Count > 0)
+            {
+                AIPlayers.RemoveAt(AIPlayers.Count - 1);
+                changed = true;
+            }
+
+            if (GameModeMap.CoopInfo == null)
+            {
+                // Force excess human players (from the bottom of the list upwards,
+                // skipping the local host) to spectator.
+                for (int i = Players.Count - 1; i >= 0; i--)
+                {
+                    if (NonSpectatorPlayerCount + AIPlayers.Count <= capacity)
+                        break;
+
+                    if (Players[i].Name == ProgramConstants.PLAYERNAME)
+                        continue;
+
+                    if (IsPlayerSpectator(Players[i]))
+                        continue;
+
+                    ForceSpectator(Players[i]);
+                    changed = true;
+                }
+            }
+            else
+            {
+                int excess = NonSpectatorPlayerCount + AIPlayers.Count - capacity;
+
+                for (int i = Players.Count - 1; i >= 1 && excess > 0; i--)
+                {
+                    if (Players[i].Name == ProgramConstants.PLAYERNAME)
+                        continue;
+
+                    KickPlayer(i);
+                    excess--;
+                    changed = true;
+                }
+            }
+
+            return changed;
+        }
+
         protected virtual string GetIPAddressForPlayer(PlayerInfo player) => "0.0.0.0";
 
         /// <summary>
@@ -2335,8 +2462,11 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 pInfo.StartingLocation = ddPlayerStarts[pId].SelectedIndex;
                 pInfo.TeamId = ddPlayerTeams[pId].SelectedIndex;
 
-                if (pInfo.SideId == SideCount + RandomSelectorCount)
+                if (IsPlayerSpectator(pInfo))
+                {
                     pInfo.StartingLocation = 0;
+                    pInfo.TeamId = 0;
+                }
 
                 XNADropDown ddName = ddPlayerNames[pId];
 
@@ -2450,21 +2580,32 @@ namespace DTAClient.DXGUI.Multiplayer.GameLobby
                 ddPlayerName.AllowDropDown = false;
 
                 bool allowPlayerOptionsChange = allowOptionsChange || pInfo.Name == ProgramConstants.PLAYERNAME;
+                bool isSpectator = IsPlayerSpectator(pInfo);
 
                 ddPlayerSides[pId].SelectedIndex = pInfo.SideId;
-                ddPlayerSides[pId].AllowDropDown = !playerExtraOptions.IsForceRandomSides && allowPlayerOptionsChange;
+
+                // Spectators cannot switch back to a combatant side while the
+                // selected map has no free combatant slot left.
+                bool sideChangeAllowed = !playerExtraOptions.IsForceRandomSides && allowPlayerOptionsChange;
+                if (isSpectator && !CanBecomeCombatant(pInfo))
+                    sideChangeAllowed = false;
+                ddPlayerSides[pId].AllowDropDown = sideChangeAllowed;
 
                 ddPlayerColors[pId].SelectedIndex = pInfo.ColorId;
                 ddPlayerColors[pId].AllowDropDown = !playerExtraOptions.IsForceRandomColors && allowPlayerOptionsChange;
 
-                ddPlayerStarts[pId].SelectedIndex = pInfo.StartingLocation;
+                ddPlayerStarts[pId].SelectedIndex = isSpectator ? 0 : pInfo.StartingLocation;
 
-                ddPlayerTeams[pId].SelectedIndex = pInfo.TeamId;
-                if (GameModeMap != null)
-                {
-                    ddPlayerTeams[pId].AllowDropDown = !playerExtraOptions.IsForceNoTeams && allowPlayerOptionsChange && !GameModeMap.IsCoop && !GameModeMap.ForceNoTeams;
-                    ddPlayerStarts[pId].AllowDropDown = !playerExtraOptions.IsForceRandomStarts && allowPlayerOptionsChange && !GameModeMap.ForceRandomStartLocations;
-                }
+                ddPlayerTeams[pId].SelectedIndex = isSpectator ? 0 : pInfo.TeamId;
+
+                bool teamChangeAllowed = !playerExtraOptions.IsForceNoTeams && allowPlayerOptionsChange &&
+                    (GameModeMap == null || (!GameModeMap.IsCoop && !GameModeMap.ForceNoTeams));
+                bool startChangeAllowed = !playerExtraOptions.IsForceRandomStarts && allowPlayerOptionsChange &&
+                    (GameModeMap == null || !GameModeMap.ForceRandomStartLocations);
+
+                // Spectators cannot pick a starting location or a team.
+                ddPlayerTeams[pId].AllowDropDown = !isSpectator && teamChangeAllowed;
+                ddPlayerStarts[pId].AllowDropDown = !isSpectator && startChangeAllowed;
             }
 
             // AI players
