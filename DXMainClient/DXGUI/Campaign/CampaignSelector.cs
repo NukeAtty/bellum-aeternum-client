@@ -68,6 +68,20 @@ namespace DTAClient.DXGUI.Campaign
         private XNATrackbar trbDifficultySelector;
         private List<IUserSetting> userSettings = new List<IUserSetting>();
 
+        private XNAPanel pnlMedals;
+        private XNALabel lblMedalsTitle;
+        private XNAPanel medalBronze;
+        private XNAPanel medalSilver;
+        private XNAPanel medalGold;
+        private Texture2D medalBronzeTexture;
+        private Texture2D medalSilverTexture;
+        private Texture2D medalGoldTexture;
+        private Texture2D medalLockedTexture;
+
+        private Mission missionBeingLaunched;
+        private int missionLaunchDifficulty;
+        private DateTime missionLaunchTime;
+
         private CheaterWindow cheaterWindow;
 
         private readonly List<XNAClientToggleButton> categoryButtons = new();
@@ -319,6 +333,8 @@ namespace DTAClient.DXGUI.Campaign
                 AddChild(btnReturn);
             }
 
+            InitializeMedalPanel();
+
             // Set control attributes from INI file
             base.Initialize();
 
@@ -360,6 +376,7 @@ namespace DTAClient.DXGUI.Campaign
                 lblMissionLocation.Text = string.Empty;
 
                 UpdateMissionPreview(string.Empty);
+                UpdateMedals(null);
 
                 btnLaunch.AllowClick = false;
                 return;
@@ -369,6 +386,8 @@ namespace DTAClient.DXGUI.Campaign
 
             lblMissionTitle.Text = mission.Title;
             lblMissionLocation.Text = mission.Location;
+
+            UpdateMedals(mission);
 
             UpdateMissionPreview(mission.PreviewImage);
 
@@ -606,6 +625,10 @@ namespace DTAClient.DXGUI.Campaign
             else
                 ToggleControls(false);
 
+            missionBeingLaunched = mission;
+            missionLaunchDifficulty = mission.PlayerAlwaysOnNormalDifficulty ? 1 : trbDifficultySelector.Value;
+            missionLaunchTime = DateTime.Now;
+
             discordHandler.UpdatePresence(mission.UntranslatedGUIName, difficultyName, mission.IconPath, true);
             GameProcessLogic.GameProcessExited += GameProcessExited_Callback;
 
@@ -711,6 +734,128 @@ namespace DTAClient.DXGUI.Campaign
         private int GetComputerDifficulty() =>
             Math.Abs(trbDifficultySelector.Value - 2);
 
+        private void InitializeMedalPanel()
+        {
+            medalBronzeTexture = AssetLoader.LoadTexture("Medals/bronze.png");
+            medalSilverTexture = AssetLoader.LoadTexture("Medals/silver.png");
+            medalGoldTexture = AssetLoader.LoadTexture("Medals/gold.png");
+            medalLockedTexture = AssetLoader.LoadTexture("Medals/locked.png");
+
+            pnlMedals = new XNAPanel(WindowManager);
+            pnlMedals.Name = nameof(pnlMedals);
+            pnlMedals.DrawBorders = false;
+            pnlMedals.PanelBackgroundDrawMode = PanelBackgroundImageDrawMode.STRETCHED;
+            pnlMedals.BackgroundTexture = AssetLoader.CreateTexture(new Color(0, 0, 0, 128), 2, 2);
+            pnlMedals.ClientRectangle = new Rectangle(1320, 700, 480, 240);
+
+            lblMedalsTitle = new XNALabel(WindowManager);
+            lblMedalsTitle.Name = nameof(lblMedalsTitle);
+            lblMedalsTitle.FontIndex = 1;
+            lblMedalsTitle.Text = "MEDALS".L10N("Client:Campaign:Medals");
+            lblMedalsTitle.ClientRectangle = new Rectangle(0, 0, 1, 1);
+
+            medalBronze = CreateMedalPanel(nameof(medalBronze), 0);
+            medalSilver = CreateMedalPanel(nameof(medalSilver), 1);
+            medalGold = CreateMedalPanel(nameof(medalGold), 2);
+
+            SetMedalState(medalBronze, medalBronzeTexture, false);
+            SetMedalState(medalSilver, medalSilverTexture, false);
+            SetMedalState(medalGold, medalGoldTexture, false);
+
+            pnlMedals.AddChild(lblMedalsTitle);
+            pnlMedals.AddChild(medalBronze);
+            pnlMedals.AddChild(medalSilver);
+            pnlMedals.AddChild(medalGold);
+
+            AddChild(pnlMedals);
+        }
+
+        private XNAPanel CreateMedalPanel(string name, int index)
+        {
+            var medal = new XNAPanel(WindowManager);
+            medal.Name = name;
+            medal.DrawBorders = false;
+            medal.PanelBackgroundDrawMode = PanelBackgroundImageDrawMode.STRETCHED;
+            medal.ClientRectangle = new Rectangle(20 + index * 150, 44, 120, 120);
+            return medal;
+        }
+
+        private void UpdateMedals(Mission mission)
+        {
+            int level = CampaignAchievements.GetMedalLevel(mission);
+
+            SetMedalState(medalBronze, medalBronzeTexture, level >= CampaignAchievements.BRONZE);
+            SetMedalState(medalSilver, medalSilverTexture, level >= CampaignAchievements.SILVER);
+            SetMedalState(medalGold, medalGoldTexture, level >= CampaignAchievements.GOLD);
+        }
+
+        private void SetMedalState(XNAPanel medal, Texture2D unlockedTexture, bool unlocked)
+        {
+            if (medal == null)
+                return;
+
+            medal.BackgroundTexture = unlocked ? unlockedTexture : medalLockedTexture;
+        }
+
+        private Mission GetSelectedMission()
+        {
+            int index = lbCampaignList.SelectedIndex;
+            if (index < 0 || index >= selectedMissions.Count)
+                return null;
+
+            return selectedMissions[index];
+        }
+
+        /// <summary>
+        /// Reads the result of the mission that was just played from the engine's
+        /// locals.ini, cross-checks it against the difficulty the mission was
+        /// launched on, and unlocks the matching medal. The locals.ini section is
+        /// always erased afterwards so that stale data cannot be reused.
+        /// </summary>
+        private void ProcessMissionAchievements()
+        {
+            Mission mission = missionBeingLaunched;
+            missionBeingLaunched = null;
+
+            if (mission == null || string.IsNullOrEmpty(mission.Scenario))
+                return;
+
+            try
+            {
+                int expectedLevel = missionLaunchDifficulty + 1;
+                int completionLevel = ScenarioVariables.ReadCompletionLevel(mission.Scenario);
+                DateTime lastWriteTime = ScenarioVariables.GetLastWriteTime();
+
+                if (completionLevel <= 0)
+                {
+                    Logger.Log($"CampaignAchievements: no completion variables found for {mission.Scenario}.");
+                }
+                else if (lastWriteTime < missionLaunchTime)
+                {
+                    Logger.Log($"CampaignAchievements: locals.ini was modified before the mission was " +
+                        $"launched for {mission.Scenario}. Ignoring the (pre-seeded) result.");
+                }
+                else if (completionLevel != expectedLevel)
+                {
+                    Logger.Log($"CampaignAchievements: difficulty mismatch for {mission.Scenario}; " +
+                        $"locals.ini={completionLevel}, launched={expectedLevel}. Ignoring the result.");
+                }
+                else if (CampaignAchievements.Unlock(mission, completionLevel))
+                {
+                    Logger.Log($"CampaignAchievements: unlocked medal level {completionLevel} for {mission.Scenario}.");
+                    UpdateMedals(GetSelectedMission());
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("CampaignAchievements: processing the mission result failed: " + ex.Message);
+            }
+            finally
+            {
+                ScenarioVariables.EraseSection(mission.Scenario);
+            }
+        }
+
         private void GameProcessExited_Callback()
         {
             WindowManager.AddCallback(new Action(GameProcessExited), null);
@@ -752,6 +897,7 @@ namespace DTAClient.DXGUI.Campaign
                 SaveSettings();
             }
 
+            ProcessMissionAchievements();
         }
 
         private void ReadMissionList()
