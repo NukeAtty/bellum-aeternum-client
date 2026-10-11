@@ -20,6 +20,7 @@ using ClientCore.I18N;
 using System.Globalization;
 using System.Security;
 using System.Transactions;
+using DTAClient.DXGUI;
 using DTAClient.DXGUI.Multiplayer.GameLobby;
 
 namespace DTAClient
@@ -85,6 +86,10 @@ namespace DTAClient
             Logger.Initialize(clientUserFilesDirectory.FullName, clientLogFile.Name);
             Logger.WriteLogFile = true;
             MainClientConstants.LoggerInitialized = true;
+
+            // Open the encrypted asset archive (if present) and expose its INI
+            // files to the INI parser before any client configuration is read.
+            ClientAssetPak.RegisterEarly();
 
             if (!clientUserFilesDirectory.Exists)
                 clientUserFilesDirectory.Create();

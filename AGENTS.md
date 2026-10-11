@@ -79,20 +79,21 @@
 - 不要在未明确要求时提交（commit）。
 - 修 bug 时先判断是**配置(INI/资源)**问题还是**代码**问题：很多"显示/交互异常"其实来自 INI 名不匹配、段放错、键顺序或主题/基础目录加载优先级。
 
-## 图片打包（加密 .pak）
+## 图片 / INI 打包（加密 .pak）
 
-主题 GUI 图片可打包进单个加密 `.pak`（本质是**未压缩 zip**，每个条目内容用 AES-256-CBC 加密、16 字节 IV 前置；zip 内文件名仍为明文）。运行时 `Rampastring.XNAUI/AssetLoader.cs` 在磁盘搜索路径之后回退读取已注册的 pak，`DXMainClient/DXGUI/ClientAssetPak.cs` 负责注册 `Resources\clientassets.pak`。
+主题 GUI 图片**和客户端侧 INI** 可打包进单个加密 `.pak`（本质是**未压缩 zip**，每个条目内容用 AES-256-CBC 加密、16 字节 IV 前置；zip 内文件名仍为明文）。图片/音频经 `Rampastring.XNAUI/AssetLoader.cs` 在磁盘搜索路径之后回退读取；INI 经 `IniFile` 的 packed-content 机制读取。
 
-- **生成**：`Scripts\CreateAssetPak.ps1`，清单 `Scripts\pak.manifest`（相对 `-ResourcesPath` 的路径/通配符，`*.png` 递归打包全部）。
-  ```powershell
-  ./Scripts/CreateAssetPak.ps1 `
-    -ResourcesPath "D:\Bellum Aeternum v1.3.0\Resources\GUI" `
-    -OutputPath    "D:\Bellum Aeternum v1.3.0\Resources\clientassets.pak"
-  ```
-  pak 条目名相对传入的 `-ResourcesPath`（所以传主题目录 `GUI`，不是 `Resources`），与 `AssetLoader` 的查找名一致。
+- **生成**：`Scripts\CreateAssetPak.ps1`，清单 `Scripts\pak.manifest`（相对 `-ResourcesPath` 的路径/通配符）。pak 命名空间 = **主题目录**（`Resources\GUI`），所以根目录 INI 要以**扁平条目名**（`GameLobbyBase.ini`、`GameOptions.ini`…）打入。打包根目录 INI 需先**暂存**：把主题目录内容 + 待打包 INI 复制进一个临时目录再打包（详见 skill）。
 - **密钥**：内嵌在 `DXMainClient/DXGUI/ClientAssetPak.cs` 的 `KEY_BASE64`，必须与脚本 `-KeyBase64` 默认值一致；改一处要改另一处。属**混淆级**加密，防普通提取，防不住逆向。
-- **部署**：游戏实际运行的是 **.NET Framework WindowsDX** 客户端 `Resources\clientdx.exe`，依赖从 `Resources\Binaries\Windows\` 加载（见 `DXMainClient/Program.cs`）。因此 pak 支持需部署 `Resources\clientdx.exe` 与 `Resources\Binaries\Windows\Rampastring.XNAUI.WindowsDX.dll`；.NET8 版在 `Resources\BinariesNET8\Windows\`。
-- **生效前提（重要）**：文件系统优先，散图存在时 pak 不会被读取；要让它生效需移走 `Resources\GUI` 下的散图。
+- **INI 支持机制（代码）**：
+  - `Rampastring.XNAUI/Rampastring.Tools/IniFile.cs` 新增 `PackedContentProvider` 钩子与 `FileExists`。磁盘文件优先，缺失时才问 provider。写回（`WriteIniFile`）始终明文。
+  - `ClientAssetPak.RegisterEarly()`（由 `PreStartup.Initialize` 在读取任何客户端配置前调用）打开独立 `AssetPak` 并注册 INI provider，因此**早于 `AssetLoader` 初始化**也能读打包的 INI；`ClientAssetPak.Register()`（`GameClass.Initialize`）复用同一实例注册给 `AssetLoader`。
+  - 窗口 INI 查找走 `ClientGUI/IniFileResolver.cs`（供 `INItializableWindow`、`XNAWindow` 使用）：主题目录→基础目录，均先磁盘后 pak。
+  - `FileHashCalculator.CalculateSHA1ForFile` 也回退 pak，因此打包后的 `GameOptions.ini` 哈希与散文件一致。
+- **可打包（仅客户端读）**：主题 `DTACnCNetClient.ini`、`GlobalThemeSettings.ini`；所有窗口 INI（`*Lobby.ini`、`*Window*.ini`、`MainMenu.ini`、`GenericWindow.ini`、`CampaignSelector.ini`、`KeyboardCommands.ini` 等）；`GameOptions.ini`。
+- **禁止打包**（引擎/更新器直接读，或 provider 就绪前就被读，或被原始哈希）：`ClientDefinitions.ini`、`Renderers.ini`、`Fonts.ini`、`GameCollectionConfig.ini`、`FHCConfig.ini`、`UpdaterConfig.ini`、`spawn*.ini`、`ra2md.ini`、`Resources\Configs\*.ini`、翻译 INI。
+- **部署**：游戏实际运行的是 **.NET Framework WindowsDX** 客户端 `Resources\clientdx.exe`，依赖从 `Resources\Binaries\Windows\` 加载。特征改动涉及 `clientdx.exe`/`clientdx.dll`、`Binaries*\*\ClientCore.dll`、`ClientGUI.dll`、`Rampastring.XNAUI.<engine>.dll`。推荐 `Scripts\Build.ps1` 后 robocopy `Compiled\Resources` 到 `Resources`。
+- **生效前提（重要）**：文件系统优先，散文件存在时 pak 不会被读取；要让它生效需移走对应散文件（散图 + 打包过的 INI）。
 - 依赖目录判定的功能（如任务 Preview 用 `AssetLoader.AssetDirectoryExists("Campaign/Preview")`）也走 AssetLoader，因此 pak 内需包含对应目录（`*.png` 清单已涵盖）。
 
 ## 相关 Skill

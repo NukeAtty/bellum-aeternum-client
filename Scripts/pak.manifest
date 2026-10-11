@@ -1,14 +1,42 @@
 # Assets to pack into the encrypted client asset archive (clientassets.pak).
 #
 # Each non-empty, non-comment line is a path or wildcard relative to the
-# Resources directory. Wildcards are matched recursively.
+# folder passed as -ResourcesPath. Wildcards are matched recursively.
 #
-# Examples:
-#   *.png
-#   MainMenu/*.png
-#   Icons/Sides/*.png
-#   Audio/SE/*.wav
+# The pak namespace is the theme folder. Pack from a staging folder that
+# contains the theme folder contents plus the client-only INIs (see the
+# bellum-asset-pak skill for the staging workflow).
 #
-# By default every PNG under Resources is packed. Comment this out and list
-# individual paths if only a subset of images should be archived.
+# Theme images (includes Icons/Sides/*.png and Campaign/Preview/*.png).
 *.png
+
+# Client-side INI files (theme, window layouts and game options).
+# Do NOT add ClientDefinitions.ini, Renderers.ini, Fonts.ini,
+# GameCollectionConfig.ini, FHCConfig.ini or UpdaterConfig.ini - those are read
+# by the updater/game engine or before the packed-content provider is available.
+DTACnCNetClient.ini
+GlobalThemeSettings.ini
+GameOptions.ini
+GenericWindow.ini
+MainMenu.ini
+OptionsWindow.ini
+CampaignSelector.ini
+KeyboardCommands.ini
+GameLobbyBase.ini
+SkirmishLobby.ini
+MultiplayerGameLobby.ini
+CnCNetGameLobby.ini
+CnCNetLobby.ini
+CnCNetLoginWindow.ini
+LANGameLobby.ini
+LANLobby.ini
+GameCreationWindow.ini
+GameCreationWindow_Advanced.ini
+GameLoadingLobby.ini
+GameLoadingWindow.ini
+LoadingScreen.ini
+StatisticsWindow.ini
+PrivateMessagingWindow.ini
+PrivacyNotification.ini
+ManualUpdateQueryWindow.ini
+UpdateQueryWindow.ini

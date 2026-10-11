@@ -10,6 +10,8 @@ using ClientCore;
 using ClientCore.I18N;
 using ClientCore.Enums;
 
+using DTAClient.DXGUI;
+
 using Rampastring.Tools;
 
 namespace DTAClient.Online
@@ -215,31 +217,49 @@ namespace DTAClient.Online
             if (string.IsNullOrWhiteSpace(path))
                 return string.Empty;
 
-            FileInfo file = SafePath.GetFile(path);
-            if (!file.Exists)
+            Stream inputStream = OpenFileForHashing(path);
+            if (inputStream == null)
                 return string.Empty;
 
-            using Stream inputStream = file.OpenRead();
-
-            if (knownTextFileExtensions.Contains(file.Extension, StringComparer.InvariantCultureIgnoreCase))
+            using (inputStream)
             {
-                // Normalize line endings to LF
-                UTF8Encoding utf8Encoding = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
+                if (knownTextFileExtensions.Contains(Path.GetExtension(path), StringComparer.InvariantCultureIgnoreCase))
+                {
+                    // Normalize line endings to LF
+                    UTF8Encoding utf8Encoding = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
 
-                using StreamReader reader = new(inputStream, utf8Encoding, detectEncodingFromByteOrderMarks: false);
-                string text = reader.ReadToEnd();
-                text = text.Replace("\r\n", "\n").Trim();
+                    using StreamReader reader = new(inputStream, utf8Encoding, detectEncodingFromByteOrderMarks: false);
+                    string text = reader.ReadToEnd();
+                    text = text.Replace("\r\n", "\n").Trim();
 
-                byte[] bytes = utf8Encoding.GetBytes(text);
+                    byte[] bytes = utf8Encoding.GetBytes(text);
 
-                using SHA1 sha1 = SHA1.Create();
-                return Utilities.BytesToHexString(sha1.ComputeHash(bytes));
+                    using SHA1 sha1 = SHA1.Create();
+                    return Utilities.BytesToHexString(sha1.ComputeHash(bytes));
+                }
+                else
+                {
+                    using SHA1 sha1 = SHA1.Create();
+                    return Utilities.BytesToHexString(sha1.ComputeHash(inputStream));
+                }
             }
-            else
-            {
-                using SHA1 sha1 = SHA1.Create();
-                return Utilities.BytesToHexString(sha1.ComputeHash(inputStream));
-            }
+        }
+
+        /// <summary>
+        /// Opens a file for hashing. Files that are not present on the file system
+        /// are looked up in the encrypted client asset archive so that packed INI
+        /// files (for example GameOptions.ini) can still be hashed.
+        /// </summary>
+        private static Stream OpenFileForHashing(string path)
+        {
+            FileInfo file = SafePath.GetFile(path);
+            if (file.Exists)
+                return file.OpenRead();
+
+            if (ClientAssetPak.TryReadFile(path, out byte[] data))
+                return new MemoryStream(data, writable: false);
+
+            return null;
         }
 
         private class FileHashes()

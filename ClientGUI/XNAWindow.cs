@@ -35,14 +35,21 @@ namespace ClientGUI
 
         protected virtual void SetAttributesFromIni()
         {
-            if (SafePath.GetFile(ProgramConstants.GetResourcePath(), FormattableString.Invariant($"{Name}.ini")).Exists)
-                GetINIAttributes(new CCIniFile(SafePath.CombineFilePath(ProgramConstants.GetResourcePath(), FormattableString.Invariant($"{Name}.ini"))));
-            else if (SafePath.GetFile(ProgramConstants.GetBaseResourcePath(), FormattableString.Invariant($"{Name}.ini")).Exists)
-                GetINIAttributes(new CCIniFile(SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), FormattableString.Invariant($"{Name}.ini"))));
-            else if (SafePath.GetFile(ProgramConstants.GetResourcePath(), GENERIC_WINDOW_INI).Exists)
-                GetINIAttributes(new CCIniFile(SafePath.CombineFilePath(ProgramConstants.GetResourcePath(), GENERIC_WINDOW_INI)));
-            else
-                GetINIAttributes(new CCIniFile(SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), GENERIC_WINDOW_INI)));
+            string windowIniPath = IniFileResolver.Resolve(FormattableString.Invariant($"{Name}.ini"));
+            if (windowIniPath != null)
+            {
+                GetINIAttributes(new CCIniFile(windowIniPath));
+                return;
+            }
+
+            string genericIniPath = IniFileResolver.Resolve(GENERIC_WINDOW_INI);
+            if (genericIniPath != null)
+            {
+                GetINIAttributes(new CCIniFile(genericIniPath));
+                return;
+            }
+
+            GetINIAttributes(new CCIniFile(SafePath.CombineFilePath(ProgramConstants.GetBaseResourcePath(), GENERIC_WINDOW_INI)));
         }
 
         /// <summary>
