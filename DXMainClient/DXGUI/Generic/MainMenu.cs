@@ -143,6 +143,12 @@ namespace DTAClient.DXGUI.Generic
 
         private Song themeSong;
 
+        private readonly List<Song> themeSongs = new List<Song>();
+        private int currentThemeSongIndex = -1;
+        private bool musicPlaying;
+        private bool themeSongStarted;
+        private readonly Random themeSongRandom = new Random();
+
         private static readonly object locker = new object();
 
         private bool isMusicFading = false;
@@ -411,7 +417,10 @@ namespace DTAClient.DXGUI.Generic
                 if (MediaPlayer.State == MediaState.Playing)
                 {
                     if (!UserINISettings.Instance.PlayMainMenuMusic)
+                    {
+                        musicPlaying = false;
                         isMusicFading = true;
+                    }
                 }
                 else if (topBar.GetTopMostPrimarySwitchable() == this &&
                     topBar.LastSwitchType == SwitchType.PRIMARY)
@@ -660,7 +669,7 @@ namespace DTAClient.DXGUI.Generic
 
             RevertSwitchMainMenuMusicFormat();
 
-            LoadThemeSong();
+            LoadThemeSongs();
 
             PlayMusic();
 
@@ -707,10 +716,32 @@ namespace DTAClient.DXGUI.Generic
 #endif
         }
 
-        private void LoadThemeSong()
+        private void LoadThemeSongs()
+        {
+            themeSongs.Clear();
+            currentThemeSongIndex = -1;
+
+            foreach (string songName in ClientConfiguration.Instance.MainMenuMusicNames)
+            {
+                Song song = LoadThemeSong(songName);
+                if (song != null)
+                    themeSongs.Add(song);
+            }
+
+            if (themeSongs.Count > 0)
+            {
+                currentThemeSongIndex = UserINISettings.Instance.IsScoreShuffle
+                    ? themeSongRandom.Next(themeSongs.Count)
+                    : 0;
+                themeSong = themeSongs[currentThemeSongIndex];
+                Logger.Log($"MainMenu: Loaded {themeSongs.Count} theme song(s) for the playlist.");
+            }
+        }
+
+        private Song LoadThemeSong(string songName)
         {
 #if XNA
-            themeSong = AssetLoader.LoadSong(ClientConfiguration.Instance.MainMenuMusicName);
+            return AssetLoader.LoadSong(songName);
 #else
 
 #if GL
@@ -720,19 +751,22 @@ namespace DTAClient.DXGUI.Generic
 #endif
 
             FileInfo mainMenuMusicFile = SafePath.GetFile(ProgramConstants.GamePath, ProgramConstants.BASE_RESOURCE_PATH,
-                FormattableString.Invariant($"{ClientConfiguration.Instance.MainMenuMusicName}.{songExtension}"));
+                FormattableString.Invariant($"{songName}.{songExtension}"));
 
             if (!mainMenuMusicFile.Exists)
-                return;
+            {
+                Logger.Log($"MainMenu: Theme song file not found: {mainMenuMusicFile.FullName}");
+                return null;
+            }
 
             try
             {
-                themeSong = Song.FromUri(ClientConfiguration.Instance.MainMenuMusicName, new Uri(mainMenuMusicFile.FullName));
+                return Song.FromUri(songName, new Uri(mainMenuMusicFile.FullName));
             }
             catch (Exception ex)
             {
-                Logger.Log($"Error loading the theme song. Fallback to the legacy method. Have you installed 'Media Feature Pack for Windows 10/11 N'? Exception: {ex.ToString()}");
-                themeSong = AssetLoader.LoadSong(ClientConfiguration.Instance.MainMenuMusicName);
+                Logger.Log($"Error loading the theme song '{songName}'. Fallback to the legacy method. Have you installed 'Media Feature Pack for Windows 10/11 N'? Exception: {ex.ToString()}");
+                return AssetLoader.LoadSong(songName);
             }
 #endif
         }
@@ -1033,6 +1067,8 @@ namespace DTAClient.DXGUI.Generic
         {
             if (isMusicFading)
                 FadeMusic(gameTime);
+            else
+                EnsureThemeSongPlaying();
 
             base.Update(gameTime);
         }
@@ -1058,7 +1094,9 @@ namespace DTAClient.DXGUI.Generic
                 if (themeSong != null && UserINISettings.Instance.PlayMainMenuMusic)
                 {
                     isMusicFading = false;
-                    MediaPlayer.IsRepeating = true;
+                    musicPlaying = true;
+                    themeSongStarted = false;
+                    MediaPlayer.IsRepeating = false;
                     MediaPlayer.Volume = (float)UserINISettings.Instance.ClientVolume;
 
                     MediaPlayer.Play(themeSong);
@@ -1066,7 +1104,82 @@ namespace DTAClient.DXGUI.Generic
             }
             catch (Exception ex)
             {
+                musicPlaying = false;
                 Logger.Log("Playing main menu music failed! " + ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Advances the main menu music to the next song in the playlist,
+        /// wrapping back to the first song after the last one.
+        /// </summary>
+        private void PlayNextThemeSong()
+        {
+            if (themeSongs.Count == 0)
+                return;
+
+            currentThemeSongIndex = GetNextThemeSongIndex();
+            themeSong = themeSongs[currentThemeSongIndex];
+
+            try
+            {
+                themeSongStarted = false;
+                MediaPlayer.Volume = (float)UserINISettings.Instance.ClientVolume;
+                MediaPlayer.Play(themeSong);
+            }
+            catch (Exception ex)
+            {
+                musicPlaying = false;
+                Logger.Log("Playing the next theme song failed! " + ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Returns the index of the next theme song to play. When shuffle ("Shuffle Music")
+        /// is enabled, a random song is chosen, never the one currently playing; otherwise
+        /// the playlist is played in order.
+        /// </summary>
+        private int GetNextThemeSongIndex()
+        {
+            if (themeSongs.Count <= 1)
+                return 0;
+
+            if (currentThemeSongIndex < 0)
+                return themeSongRandom.Next(themeSongs.Count);
+
+            if (!UserINISettings.Instance.IsScoreShuffle)
+                return (currentThemeSongIndex + 1) % themeSongs.Count;
+
+            int next = themeSongRandom.Next(themeSongs.Count - 1);
+            if (next >= currentThemeSongIndex)
+                next++;
+
+            return next;
+        }
+
+        /// <summary>
+        /// Plays the next song in the playlist whenever the current one has
+        /// finished playing, so the whole playlist loops continuously.
+        /// </summary>
+        private void EnsureThemeSongPlaying()
+        {
+            if (!isMediaPlayerAvailable || !musicPlaying || isMusicFading)
+                return;
+
+            try
+            {
+                if (MediaPlayer.State == MediaState.Playing)
+                    themeSongStarted = true;
+                else if (themeSongStarted && MediaPlayer.State == MediaState.Stopped)
+                {
+                    themeSongStarted = false;
+                    PlayNextThemeSong();
+                }
+            }
+            catch (Exception ex)
+            {
+                musicPlaying = false;
+                Logger.Log("Advancing the theme song playlist failed! " + ex.ToString());
             }
         }
 
@@ -1090,6 +1203,7 @@ namespace DTAClient.DXGUI.Generic
                 else
                 {
                     MediaPlayer.Stop();
+                    musicPlaying = false;
                     isMusicFading = false;
                 }
             }
@@ -1122,6 +1236,7 @@ namespace DTAClient.DXGUI.Generic
                 else
                 {
                     MediaPlayer.Stop();
+                    musicPlaying = false;
                     ExitClient();
                 }
             }
@@ -1135,7 +1250,11 @@ namespace DTAClient.DXGUI.Generic
         {
             Logger.Log("Exiting.");
             WindowManager.CloseGame();
-            themeSong?.Dispose();
+
+            foreach (Song song in themeSongs)
+                song?.Dispose();
+
+            themeSong = null;
         }
 
         public void SwitchOn()
@@ -1160,6 +1279,8 @@ namespace DTAClient.DXGUI.Generic
 
         private void MusicOff()
         {
+            musicPlaying = false;
+
             try
             {
                 if (isMediaPlayerAvailable &&

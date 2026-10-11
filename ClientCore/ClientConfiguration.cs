@@ -100,18 +100,27 @@ namespace ClientCore
 
         #region Client settings
 
-        private string _mainMenuMusicName = null;
-        public string MainMenuMusicName => _mainMenuMusicName ??= GetMainMenuMusicName();
-        private string GetMainMenuMusicName()
+        private List<string> _mainMenuMusicNames = null;
+        /// <summary>
+        /// The theme songs that make up the main menu BGM playlist, in play order.
+        /// </summary>
+        public IReadOnlyList<string> MainMenuMusicNames => _mainMenuMusicNames ??= GetMainMenuMusicNames();
+        private List<string> GetMainMenuMusicNames()
         {
             string raw = DTACnCNetClient_ini.GetStringValue(GENERAL, "MainMenuTheme", "Audio/BGM/mainmenu");
             string[] parts = raw.SplitWithCleanup();
-            string chosen = parts.Length > 0
-                ? parts[new Random().Next(parts.Length)]
-                : "Audio/BGM/mainmenu";
 
-            return SafePath.CombineFilePath(chosen);
+            var names = new List<string>(parts.Length);
+            foreach (string part in parts)
+                names.Add(SafePath.CombineFilePath(part));
+
+            if (names.Count == 0)
+                names.Add(SafePath.CombineFilePath("Audio/BGM/mainmenu"));
+
+            return names;
         }
+
+        public string MainMenuMusicName => MainMenuMusicNames.Count > 0 ? MainMenuMusicNames[0] : "Audio/BGM/mainmenu";
 
         public float DefaultAlphaRate => DTACnCNetClient_ini.GetSingleValue(GENERAL, "AlphaRate", 0.005f);
 
