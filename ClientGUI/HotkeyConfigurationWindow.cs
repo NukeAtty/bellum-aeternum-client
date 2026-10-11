@@ -63,7 +63,7 @@ namespace ClientGUI
             ReadGameCommands();
 
             Name = "HotkeyConfigurationWindow";
-            ClientRectangle = new Rectangle(0, 0, 600, 450);
+            ClientRectangle = new Rectangle(0, 0, 600, 480);
             BackgroundTexture = AssetLoader.LoadTextureUncached("hotkeyconfigbg.png");
 
             var lblCategory = new XNALabel(WindowManager);
@@ -90,7 +90,7 @@ namespace ClientGUI
             lbHotkeys = new XNAMultiColumnListBox(WindowManager);
             lbHotkeys.Name = "lbHotkeys";
             lbHotkeys.ClientRectangle = new Rectangle(12, ddCategory.Bottom + 12,
-                ddCategory.Right - 12, Height - ddCategory.Bottom - 59);
+                ddCategory.Right - 12, Height - ddCategory.Bottom - 75);
             lbHotkeys.PanelBackgroundDrawMode = PanelBackgroundImageDrawMode.STRETCHED;
             lbHotkeys.BackgroundTexture = AssetLoader.CreateTexture(new Color(0, 0, 0, 128), 1, 1);
             lbHotkeys.AddColumn("Command".L10N("Client:DTAConfig:Command"), 150);
@@ -146,14 +146,14 @@ namespace ClientGUI
 
             var btnAssign = new XNAClientButton(WindowManager);
             btnAssign.Name = "btnAssign";
-            btnAssign.ClientRectangle = new Rectangle(lblDescription.X,
-                lblCurrentlyAssignedTo.Bottom + 24, UIDesignConstants.BUTTON_WIDTH_121, UIDesignConstants.BUTTON_HEIGHT);
+            btnAssign.ClientRectangle = new Rectangle(lblDescription.X + 38,
+                lblCurrentlyAssignedTo.Bottom - 12, UIDesignConstants.BUTTON_WIDTH_133, UIDesignConstants.BUTTON_HEIGHT_40);
             btnAssign.Text = "Assign Hotkey".L10N("Client:DTAConfig:AssignHotkey");
             btnAssign.LeftClick += BtnAssign_LeftClick;
 
             btnResetKey = new XNAClientButton(WindowManager);
             btnResetKey.Name = "btnResetKey";
-            btnResetKey.ClientRectangle = new Rectangle(btnAssign.X, btnAssign.Bottom + 12, btnAssign.Width, 23);
+            btnResetKey.ClientRectangle = new Rectangle(btnAssign.X, btnAssign.Bottom + 2, UIDesignConstants.BUTTON_WIDTH_133, UIDesignConstants.BUTTON_HEIGHT_40);
             btnResetKey.Text = "Reset to Default".L10N("Client:DTAConfig:ResetToDefault");
             btnResetKey.LeftClick += BtnReset_LeftClick;
 
@@ -168,13 +168,13 @@ namespace ClientGUI
 
             var btnSave = new XNAClientButton(WindowManager);
             btnSave.Name = "btnSave";
-            btnSave.ClientRectangle = new Rectangle(12, lbHotkeys.Bottom + 12, UIDesignConstants.BUTTON_WIDTH_92, UIDesignConstants.BUTTON_HEIGHT);
+            btnSave.ClientRectangle = new Rectangle(Width - 145, lbHotkeys.Bottom + 12, UIDesignConstants.BUTTON_WIDTH_133, UIDesignConstants.BUTTON_HEIGHT_40);
             btnSave.Text = "Save".L10N("Client:DTAConfig:ButtonSave");
             btnSave.LeftClick += BtnSave_LeftClick;
 
             var btnResetAllKeys = new XNAClientButton(WindowManager);
             btnResetAllKeys.Name = "btnResetAllToDefaults";
-            btnResetAllKeys.ClientRectangle = new Rectangle(0, btnSave.Y, UIDesignConstants.BUTTON_WIDTH_121, UIDesignConstants.BUTTON_HEIGHT);
+            btnResetAllKeys.ClientRectangle = new Rectangle(0, btnSave.Y, UIDesignConstants.BUTTON_WIDTH_180, UIDesignConstants.BUTTON_HEIGHT_40);
             btnResetAllKeys.Text = "Reset All Keys".L10N("Client:DTAConfig:ResetAllHotkey");
             btnResetAllKeys.LeftClick += BtnResetToDefaults_LeftClick;
             AddChild(btnResetAllKeys);
@@ -182,7 +182,7 @@ namespace ClientGUI
 
             var btnCancel = new XNAClientButton(WindowManager);
             btnCancel.Name = "btnExit";
-            btnCancel.ClientRectangle = new Rectangle(Width - 104, btnSave.Y, UIDesignConstants.BUTTON_WIDTH_92, UIDesignConstants.BUTTON_HEIGHT);
+            btnCancel.ClientRectangle = new Rectangle(12, btnSave.Y, UIDesignConstants.BUTTON_WIDTH_133, UIDesignConstants.BUTTON_HEIGHT_40);
             btnCancel.Text = "Cancel".L10N("Client:DTAConfig:ButtonCancel");
             btnCancel.LeftClick += BtnCancel_LeftClick;
 
